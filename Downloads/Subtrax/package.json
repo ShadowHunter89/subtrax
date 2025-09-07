@@ -1,0 +1,22 @@
+{
+  "name": "subtrax",
+  "version": "1.0.0",
+  "description": "A subscription optimizer that helps users manage and optimize their subscriptions.",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "firebase": "^12.2.1",
+    "jest": "^27.0.0",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.0",
+    "@types/node": "^16.0.0"
+  },
+  "license": "MIT"
+}
