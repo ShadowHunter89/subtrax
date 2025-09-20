@@ -24,23 +24,32 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
           FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
         run: node ./scripts/validate_envs.js
-      - name: Upload firebase secret (if available)
-        if: ${{ secrets.GCP_SA_KEY && secrets.FIREBASE_ACCOUNT_JSON && secrets.FIREBASE_PROJECT_ID }}
-        # Ensure gcloud is installed and authenticated using the provided service account key
-        run: |
-          echo "Preparing to upload firebase secret via gcloud..."
-          echo "${{ secrets.FIREBASE_ACCOUNT_JSON }}" > /tmp/firebase.json
-          SECRET_NAME=${{ secrets.FIREBASE_SECRET_NAME || 'firebase-service-account' }}
-          if ! gcloud secrets describe "$SECRET_NAME" >/dev/null 2>&1; then
-            gcloud secrets create "$SECRET_NAME" --replication-policy="automatic"
-          fi
-          gcloud secrets versions add "$SECRET_NAME" --data-file=/tmp/firebase.json
-        env:
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-
       - name: Setup gcloud (authenticate)
-        if: ${{ secrets.GCP_SA_KEY && secrets.FIREBASE_PROJECT_ID }}
         uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Upload firebase secret (if available)
+        # Map secrets into environment variables and decide at runtime whether to upload.
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          FIREBASE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
+        run: |
+          echo "Checking for required secrets before attempting upload..."
+          if [ -z "$GCP_SA_KEY" ] || [ -z "$FIREBASE_ACCOUNT_JSON" ] || [ -z "$FIREBASE_PROJECT_ID" ]; then
+            echo "Required secrets missing; skipping upload step."
+            exit 0
+          fi
+          echo "Preparing to upload firebase secret via gcloud..."
+          echo "$GCP_SA_KEY" > /tmp/sa.json
+          echo "$FIREBASE_ACCOUNT_JSON" > /tmp/firebase.json
+          gcloud auth activate-service-account --key-file=/tmp/sa.json
+          gcloud config set project "$FIREBASE_PROJECT_ID"
+          SECRET_NAME=${FIREBASE_SECRET_NAME:-'firebase-service-account'}
+          if ! gcloud secrets describe "$SECRET_NAME" >/dev/null 2>&1; then
+            gcloud secrets create "$SECRET_NAME" --replication-policy="automatic"
+          fi
+          gcloud secrets versions add "$SECRET_NAME" --data-file=/tmp/firebase.json
