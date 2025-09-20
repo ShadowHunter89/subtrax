@@ -72,6 +72,19 @@ jobs:
           echo "$FIREBASE_ACCOUNT_JSON" > /tmp/firebase.json
           gcloud auth activate-service-account --key-file=/tmp/sa.json
           gcloud config set project "$FIREBASE_PROJECT_ID"
+
+          # Try enabling the Secret Manager API if it isn't already enabled.
+          # Note: enabling the API requires the active service account to have
+          # permission to enable services (serviceusage.services.enable). If the
+          # uploader SA lacks that permission, this command will fail and we
+          # provide a clear diagnostic so the human can enable the API.
+          echo "Ensuring Secret Manager API is enabled for project $FIREBASE_PROJECT_ID..."
+          if ! gcloud services enable secretmanager.googleapis.com --project="$FIREBASE_PROJECT_ID" --quiet; then
+            echo "WARNING: Could not enable Secret Manager API. If this is due to lack of permission, please enable the API in the GCP console:"
+            echo "https://console.developers.google.com/apis/api/secretmanager.googleapis.com/overview?project=$FIREBASE_PROJECT_ID"
+            echo "Continuing to attempt secret creation; the next command may fail if the API is disabled."
+          fi
+
           SECRET_NAME=${FIREBASE_SECRET_NAME:-'firebase-service-account'}
           if ! gcloud secrets describe "$SECRET_NAME" >/dev/null 2>&1; then
             gcloud secrets create "$SECRET_NAME" --replication-policy="automatic"
