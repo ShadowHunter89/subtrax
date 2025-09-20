@@ -39,6 +39,23 @@ To start the application, use the following command:
 
 ```
 npm start
+
+## Deployment checklist
+
+1. Do not commit `.env` or `server/config/firebase.json` to git. Use the platform environment settings.
+2. Fill in environment variables listed in `.env.example` on your host (Render for backend, Netlify for frontend).
+	- For Render (web service): set `OPENAI_API_KEY`, `OPENAI_MODEL`, `FIREBASE_*` vars, `STRIPE_SECRET_KEY`.
+	- For Netlify (frontend): set `REACT_APP_FIREBASE_*` and `REACT_APP_STRIPE_PUBLISHABLE_KEY`.
+3. For backend on Render:
+	- Build Command: `npm install`
+	- Start Command: `node server.js`
+	- Ensure service is set to `node` environment and correct `PORT`.
+4. For frontend on Netlify: link the `client` folder as the site root, set build commands and environment variables.
+5. Verify `/api/health` on the deployed backend returns `{"status":"ok"}` and `openai_model` key.
+
+## Notes
+- If you are in Pakistan and need payments, use a local gateway (JazzCash/EasyPaisa) or an international aggregator; Stripe may not be available for payouts.
+- Set `OPENAI_MODEL` to `gpt-5-mini` only if your OpenAI account has access; otherwise keep a supported fallback like `gpt-4o-mini`.
 ```
 
 ## Contributing
