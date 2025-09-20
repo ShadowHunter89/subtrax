@@ -8,13 +8,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Avoid attempting to initialize submodules (the repo contains references
+          # to a local path in .gitmodules that can break the runner).
+          submodules: false
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
       - name: Install server deps
         working-directory: ./server
-        run: npm ci
+        run: |
+          # Use npm ci when a lockfile exists (clean CI installs). Fall back to
+          # npm install when no lockfile is present (avoids npm ci failures).
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            npm install
+          fi
       - name: Validate envs
         working-directory: ./server
         # Expose the repository secrets into the step environment so the validator
