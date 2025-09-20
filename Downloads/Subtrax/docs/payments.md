@@ -57,3 +57,35 @@ Description:
 Notes:
 - Production-ready EasyPaisa and JazzCash require merchant credentials and exact API details; placeholders are included with TODOs.
 - Webhook idempotency uses Redis (`REDIS_URL`) when configured.
+
+## JazzCash integration notes
+
+Endpoints to provide to JazzCash (use your real domain; your deployed frontend is at https://subtrax.vercel.app/):
+
+- Browser return URL (customer redirect after payment):
+  https://subtrax.vercel.app/payments/return/jazzcash
+
+- Server webhook/IPN (server-to-server notifications):
+  https://subtrax.vercel.app/api/payments/webhook/jazzcash
+
+- Optional admin credential callback (for JazzCash to POST generated credentials):
+  https://subtrax.vercel.app/api/admin/jazzcash/credentials
+
+Security recommendations
+
+- Use HTTPS only.
+- Configure `JAZZCASH_WEBHOOK_SECRET` as a shared secret and provide it to JazzCash; the server will require that header (`x-jazz-auth` or `x-jazzcash-auth`) to accept webhooks when set.
+- Optionally set `JAZZCASH_ALLOWED_IPS` to a comma-separated list of JazzCash IPs to further restrict sources; when set, incoming webhooks from non-allowed IPs will be rejected.
+- Ensure `REDIS_URL` is set in production so webhook idempotency works.
+
+Runtime envs
+
+- JAZZCASH_MERCHANT_ID
+- JAZZCASH_PASSWORD
+- JAZZCASH_INTEGRITY_SALT
+- JAZZCASH_CATEGORY_CODE (optional)
+- JAZZCASH_CHECKOUT_URL (sandbox or production URL)
+- JAZZCASH_WEBHOOK_SECRET (optional shared secret header value)
+- JAZZCASH_ALLOWED_IPS (optional CSV of allowed addresses)
+
+If you want I can create the admin endpoint to accept JazzCash-provided credentials and store them into Secret Manager (requires runtime SA with secretmanager.* permissions).

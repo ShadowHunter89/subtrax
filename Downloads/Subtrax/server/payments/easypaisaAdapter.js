@@ -48,14 +48,16 @@ async function createPayment({ amount, phone, description, returnUrl }) {
   }
 }
 
-function verifyWebhook(body, signature) {
+function verifyWebhook(body, raw, headers) {
   // EasyPaisa webhook verification details depend on the merchant setup.
   // Provide a permissive pass when no API key is set for sandbox testing.
   if (!EASYPAYSA_API_KEY) return { ok: true, note: 'sandbox mode' };
 
-  // Example HMAC verification (replace with actual spec)
+  // Example HMAC verification (replace with actual spec). Many providers sign raw payloads.
   try {
-    const expected = crypto.createHmac('sha256', EASYPAYSA_API_KEY).update(JSON.stringify(body)).digest('hex');
+    const signature = headers['x-easypaisa-signature'] || headers['x-signature'] || null;
+    if (!signature) return { ok: false, error: 'signature header missing' };
+    const expected = crypto.createHmac('sha256', EASYPAYSA_API_KEY).update(typeof raw === 'string' ? raw : JSON.stringify(body)).digest('hex');
     return { ok: expected === signature };
   } catch (err) {
     return { ok: false, error: err.message };

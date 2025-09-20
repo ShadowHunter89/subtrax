@@ -22,8 +22,8 @@ router.post('/create-checkout-session', async (req, res) => {
         },
       ],
       mode: 'subscription',
-      success_url: process.env.FRONTEND_URL + '/success',
-      cancel_url: process.env.FRONTEND_URL + '/cancel',
+  success_url: (process.env.FRONTEND_BASE_URL || process.env.FRONTEND_URL || '') + '/success',
+  cancel_url: (process.env.FRONTEND_BASE_URL || process.env.FRONTEND_URL || '') + '/cancel',
     });
     res.json({ url: session.url });
   } catch (err) {
