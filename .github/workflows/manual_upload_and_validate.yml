@@ -22,10 +22,17 @@ jobs:
           ls -la
           echo "Listing server dir"
           ls -la server || true
+          echo "Looking for nested Downloads/Subtrax/server dir"
+          ls -la Downloads/Subtrax/server || true
       - name: Install server deps
         run: |
-          # Switch into server directory explicitly to avoid working-directory mismatches
-          cd server
+          # The repository contains a nested copy under Downloads/Subtrax/server
+          # (artifact of local workspace). Use that path if it exists, otherwise fallback to ./server
+          if [ -d Downloads/Subtrax/server ]; then
+            cd Downloads/Subtrax/server
+          else
+            cd server
+          fi
           # Use npm ci when a lockfile exists (clean CI installs). Fall back to
           # npm install when no lockfile is present (avoids npm ci failures).
           if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
@@ -41,7 +48,11 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
           FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
         run: |
-          cd server
+          if [ -d Downloads/Subtrax/server ]; then
+            cd Downloads/Subtrax/server
+          else
+            cd server
+          fi
           node ./scripts/validate_envs.js
       - name: Setup gcloud (authenticate)
         uses: google-github-actions/setup-gcloud@v1
