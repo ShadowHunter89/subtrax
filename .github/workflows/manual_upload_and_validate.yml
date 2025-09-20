@@ -15,7 +15,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          # Firebase packages expect Node >=20; use Node 20 to avoid EBADENGINE warnings
+          node-version: 20
       - name: List repository files (debug)
         run: |
           echo "Listing repo root"
@@ -26,13 +27,18 @@ jobs:
           ls -la Downloads/Subtrax/server || true
       - name: Install server deps
         run: |
-          # The repository contains a nested copy under Downloads/Subtrax/server
-          # (artifact of local workspace). Use that path if it exists, otherwise fallback to ./server
-          if [ -d Downloads/Subtrax/server ]; then
-            cd Downloads/Subtrax/server
+          # Determine the correct server dir by checking where the validator script exists.
+          if [ -f server/scripts/validate_envs.js ]; then
+            SRV_DIR=server
+          elif [ -f Downloads/Subtrax/server/scripts/validate_envs.js ]; then
+            SRV_DIR=Downloads/Subtrax/server
           else
-            cd server
+            echo "Could not find server/scripts/validate_envs.js in either expected location"
+            ls -la || true
+            exit 1
           fi
+          echo "Using server dir: $SRV_DIR"
+          cd "$SRV_DIR"
           # Use npm ci when a lockfile exists (clean CI installs). Fall back to
           # npm install when no lockfile is present (avoids npm ci failures).
           if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
@@ -48,11 +54,19 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
           FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
         run: |
-          if [ -d Downloads/Subtrax/server ]; then
-            cd Downloads/Subtrax/server
+          # Re-use the same detection logic used in the install step to ensure we
+          # run the validator from the correct directory.
+          if [ -f server/scripts/validate_envs.js ]; then
+            SRV_DIR=server
+          elif [ -f Downloads/Subtrax/server/scripts/validate_envs.js ]; then
+            SRV_DIR=Downloads/Subtrax/server
           else
-            cd server
+            echo "Could not find server/scripts/validate_envs.js in either expected location"
+            ls -la || true
+            exit 1
           fi
+          echo "Running validator from: $SRV_DIR"
+          cd "$SRV_DIR"
           node ./scripts/validate_envs.js
       - name: Setup gcloud (authenticate)
         uses: google-github-actions/setup-gcloud@v1
