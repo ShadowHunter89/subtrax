@@ -44,6 +44,9 @@ app.use(express.json());
 // Stripe webhook needs raw body, mount its router after express.json if necessary
 const stripeRouter = require('./stripe');
 app.use('/api/stripe', stripeRouter);
+// Payments router (Paddle, EasyPaisa)
+const paymentsRouter = require('./paymentsRouter');
+app.use('/api/payments', paymentsRouter);
 
 
 // Example API endpoint
