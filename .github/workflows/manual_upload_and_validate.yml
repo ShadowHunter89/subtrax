@@ -17,6 +17,12 @@ jobs:
         run: npm ci
       - name: Validate envs
         working-directory: ./server
+        # Expose the repository secrets into the step environment so the validator
+        # can detect the Firebase credentials the repo already has (e.g. FIREBASE_ACCOUNT_JSON)
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ACCOUNT_JSON }}
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+          FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
         run: node ./scripts/validate_envs.js
       - name: Upload firebase secret (if available)
         if: ${{ secrets.GCP_SA_KEY && secrets.FIREBASE_ACCOUNT_JSON && secrets.FIREBASE_PROJECT_ID }}
