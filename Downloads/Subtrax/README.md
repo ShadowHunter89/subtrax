@@ -46,10 +46,12 @@ npm start
 2. Fill in environment variables listed in `.env.example` on your host (Render for backend, Netlify for frontend).
 	- For Render (web service): set `OPENAI_API_KEY`, `OPENAI_MODEL`, `FIREBASE_*` vars, `STRIPE_SECRET_KEY`.
 	- For Netlify (frontend): set `REACT_APP_FIREBASE_*` and `REACT_APP_STRIPE_PUBLISHABLE_KEY`.
+	- For Netlify (frontend): set `REACT_APP_FIREBASE_*`, `REACT_APP_STRIPE_PUBLISHABLE_KEY` and optionally `REACT_APP_FRONTEND_BASE_URL`.
 3. For backend on Render:
 	- Build Command: `npm install`
 	- Start Command: `node server.js`
 	- Ensure service is set to `node` environment and correct `PORT`.
+	- Consider setting `FRONTEND_BASE_URL` to your deployed frontend origin (e.g. https://subtrax.vercel.app) so server-generated redirects and Stripe webhooks redirect correctly.
 4. For frontend on Netlify: link the `client` folder as the site root, set build commands and environment variables.
 5. Verify `/api/health` on the deployed backend returns `{"status":"ok"}` and `openai_model` key.
 

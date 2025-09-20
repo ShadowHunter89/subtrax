@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const admin = require('firebase-admin');
+const { admin, initialized: firebaseInitialized } = require('./firebaseAdmin');
 const dotenv = require('dotenv');
 const { init: initSentry } = require('./lib/sentry');
 
@@ -21,25 +21,34 @@ if (missing.length > 0) {
 }
 
 // Initialize Firebase Admin if service account is available
-let firebaseInitialized = false;
-try {
-  // Prefer service account JSON in development; in production, use GOOGLE_APPLICATION_CREDENTIALS or env-based credentials
-  const serviceAccount = require('./config/firebase.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET
-  });
-  firebaseInitialized = true;
-} catch (err) {
-  console.warn('Firebase service account not found or failed to initialize. If running in production, ensure GOOGLE_APPLICATION_CREDENTIALS or proper env-based credentials are set.');
-}
-
 let db = null;
 if (firebaseInitialized) {
   db = admin.firestore();
 }
 const app = express();
-app.use(cors());
+// Configure CORS in a host-agnostic way. If FRONTEND_ALLOWED_ORIGINS is set
+// we'll use it as a whitelist. If FRONTEND_BASE_URL is set we'll allow that
+// origin. Otherwise, allow the Origin header dynamically (convenient for
+// many hosting providers) while still allowing server-to-server calls.
+const { parseAllowedOrigins } = require('./lib/frontendBase');
+const allowed = parseAllowedOrigins();
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (server-to-server or curl)
+    if (!origin) return callback(null, true);
+    // If explicit FRONTEND_BASE_URL is set, only allow that
+    if (process.env.FRONTEND_BASE_URL) {
+      return callback(null, origin === process.env.FRONTEND_BASE_URL);
+    }
+    // If a whitelist is configured, validate against it
+    if (allowed.length) {
+      try { const o = new URL(origin).origin || origin; return callback(null, allowed.includes(o)); } catch (_) { return callback(null, allowed.includes(origin)); }
+    }
+    // Default: allow the origin (host-agnostic)
+    return callback(null, true);
+  },
+  credentials: true
+}));
 app.use(express.json());
 // Stripe webhook needs raw body, mount its router after express.json if necessary
 const stripeRouter = require('./stripe');
@@ -47,15 +56,43 @@ app.use('/api/stripe', stripeRouter);
 // Payments router (Paddle, EasyPaisa)
 const paymentsRouter = require('./paymentsRouter');
 app.use('/api/payments', paymentsRouter);
+const billingRouter = require('./billingRouter');
+app.use('/api/billing', billingRouter);
 
 
 // Example API endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    firebase: firebaseInitialized,
+    firebase: !!db,
     openai_model: process.env.OPENAI_MODEL || 'not-set'
   });
+});
+
+// Admin endpoints for token/session management (require ADMIN_API_KEY)
+const adminAuth = require('./middleware/adminAuth');
+// Create a custom token for a uid
+app.post('/api/admin/create-custom-token', adminAuth, async (req, res) => {
+  try {
+    const { uid, additionalClaims } = req.body;
+    if (!uid) return res.status(400).json({ error: 'uid required' });
+    const token = await admin.auth().createCustomToken(uid, additionalClaims || {});
+    res.json({ token });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Create a session cookie from an ID token (for server-side sessions)
+app.post('/api/admin/create-session-cookie', adminAuth, async (req, res) => {
+  try {
+    const { idToken, expiresIn = 60 * 60 * 24 * 5 * 1000 } = req.body; // default 5 days
+    if (!idToken) return res.status(400).json({ error: 'idToken required' });
+    const cookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
+    res.json({ cookie });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // Ensure OPENAI_MODEL is available (fallback handled in code that calls OpenAI)
