@@ -7,8 +7,7 @@
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "test": "jest",
-    "prepare": "husky install",
-    "precommit-install": "pre-commit install"
+    "prepare": "husky install"
   },
   "dependencies": {
     "@sentry/node": "^10.12.0",
@@ -21,7 +20,6 @@
   },
   "devDependencies": {
     "husky": "^8.0.0",
-    "pre-commit": "1.2.2",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.0.0",
     "@types/supertest": "^2.0.12",
