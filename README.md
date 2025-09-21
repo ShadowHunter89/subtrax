@@ -1,5 +1,15 @@
 # Subtrax - Subscription Optimizer
 
+## Firebase Service Account Setup
+
+**Production/Cloud Deployment:**
+- Do NOT commit `server/config/firebase.json`.
+- Instead, copy the contents of your Firebase service account JSON and set it as the environment variable `FIREBASE_SERVICE_ACCOUNT_JSON` in your hosting provider (Render, Vercel, etc).
+- The backend will auto-detect and use this env var for Firebase Admin initialization.
+
+**Local Development:**
+- You may use a local `server/config/firebase.json` file, but this is NOT recommended for production.
+
 Subtrax is a subscription optimization tool designed to help users manage and optimize their various subscriptions. The application analyzes user subscriptions and provides tailored recommendations to enhance user experience and reduce costs.
 
 ## Features
