@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import "./styles.css";
 
 const accent = "#7F5AF0";
 const bg = "#16161a";

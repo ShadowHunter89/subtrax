@@ -26,8 +26,8 @@
         h1 { 
             font-size: 3rem;
             background: linear-gradient(45deg, #7F5AF0, #2CB67D);
-            background-clip: text;
             -webkit-background-clip: text;
+            background-clip: text;
             color: transparent;
             margin-bottom: 1rem;
             font-weight: 800;
@@ -73,6 +73,9 @@
         .cta:hover {
             transform: translateY(-2px);
         }
+        .admin-cta {
+            background: linear-gradient(45deg, #2CB67D, #7F5AF0);
+        }
         .status {
             background: #e8f5e8;
             color: #2e7d2e;
@@ -113,7 +116,7 @@
         <button class="cta" onclick="window.location.href='/dashboard'">
             Launch Dashboard
         </button>
-        <button class="cta" onclick="window.location.href='/admin'" style="background: linear-gradient(45deg, #2CB67D, #7F5AF0);">
+        <button class="cta admin-cta" onclick="window.location.href='/admin'">
             Admin Panel
         </button>
         

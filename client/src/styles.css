@@ -544,3 +544,202 @@
   border: 1px solid #cfc;
   color: #363;
 }
+
+/* Page Container styles */
+.page-container {
+  padding: 3rem;
+  max-width: 800px;
+  margin: auto;
+  color: #16161a;
+  background: #fffffe;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(127, 90, 240, 0.33);
+}
+
+.page-title {
+  color: #7F5AF0;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.page-content {
+  line-height: 1.6;
+  color: #16161a;
+}
+
+.page-content h2 {
+  color: #7F5AF0;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.page-content h3 {
+  color: #333;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.page-content p {
+  margin-bottom: 1rem;
+}
+
+.page-content ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.page-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Checkout Button styles */
+.checkout-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.checkout-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #7F5AF0;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.checkout-btn:hover {
+  background-color: #6A4CE3;
+  transform: translateY(-1px);
+}
+
+.checkout-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.checkout-btn.secondary {
+  background-color: #2CB67D;
+}
+
+.checkout-btn.secondary:hover {
+  background-color: #28a569;
+}
+
+.checkout-loading {
+  color: #666;
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* Landing Page styles - already defined in the existing CSS but adding missing classes */
+.landing-form-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.landing-input {
+  padding: 1rem;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  min-width: 250px;
+  transition: all 0.3s ease;
+}
+
+.landing-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.landing-input:focus {
+  outline: none;
+  border-color: #2CB67D;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.landing-submit-btn {
+  padding: 1rem 2rem;
+  background: #2CB67D;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.landing-submit-btn:hover {
+  background: #28a569;
+  transform: translateY(-2px);
+}
+
+.landing-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.landing-hero-svg {
+  position: absolute;
+  top: -40px;
+}
+
+.feature-item-title {
+  font-weight: 700;
+  color: #7F5AF0;
+  margin-bottom: 0.5rem;
+}
+
+.feature-item-desc {
+  color: #94a1b2;
+  line-height: 1.5;
+}
+
+.pricing-price {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.testimonial-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.testimonial-quote {
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.testimonial-name {
+  font-weight: 700;
+}
+
+.faq-question {
+  font-weight: 700;
+  color: #fffffe;
+  margin-bottom: 0.5rem;
+}
+
+.faq-answer {
+  color: #94a1b2;
+  margin-top: 1rem;
+}
