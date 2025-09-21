@@ -1,0 +1,92 @@
+name: Manual Upload & Validate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validate-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Avoid attempting to initialize submodules (the repo contains references
+          # to a local path in .gitmodules that can break the runner).
+          submodules: false
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Firebase packages expect Node >=20; use Node 20 to avoid EBADENGINE warnings
+          node-version: 20
+      - name: List repository files (debug)
+        run: |
+          echo "Listing repo root"
+          ls -la
+          echo "Listing server dir"
+          ls -la server || true
+          echo "Looking for nested Downloads/Subtrax/server dir"
+          ls -la Downloads/Subtrax/server || true
+      # Note: we don't need to install server dependencies to run the small
+      # validator script (it has no external deps). Installing caused npm
+      # failures in CI because of the nested copy and engine requirements. The
+      # validator runs with the Node runtime already set above.
+      - name: Validate envs
+        # Expose the repository secrets into the step environment so the validator
+        # can detect the Firebase credentials the repo already has (e.g. FIREBASE_ACCOUNT_JSON)
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ACCOUNT_JSON }}
+          FIREBASE_SERVICE_ACCOUNT_BASE64: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}
+          FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
+        run: |
+          # Locate and run the small validator script directly; it has no external
+          # dependencies and works with the Node runtime already provided.
+          if [ -f server/scripts/validate_envs.js ]; then
+            node server/scripts/validate_envs.js
+          elif [ -f Downloads/Subtrax/server/scripts/validate_envs.js ]; then
+            node Downloads/Subtrax/server/scripts/validate_envs.js
+          else
+            echo "Could not find server/scripts/validate_envs.js in either expected location"
+            ls -la || true
+            exit 1
+          fi
+      - name: Setup gcloud (authenticate)
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: Upload firebase secret (if available)
+        # Map secrets into environment variables and decide at runtime whether to upload.
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          FIREBASE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
+        run: |
+          echo "Checking for required secrets before attempting upload..."
+          if [ -z "$GCP_SA_KEY" ] || [ -z "$FIREBASE_ACCOUNT_JSON" ] || [ -z "$FIREBASE_PROJECT_ID" ]; then
+            echo "Required secrets missing; skipping upload step."
+            exit 0
+          fi
+          echo "Preparing to upload firebase secret via gcloud..."
+          echo "$GCP_SA_KEY" > /tmp/sa.json
+          echo "$FIREBASE_ACCOUNT_JSON" > /tmp/firebase.json
+          gcloud auth activate-service-account --key-file=/tmp/sa.json
+          gcloud config set project "$FIREBASE_PROJECT_ID"
+
+          # Try enabling the Secret Manager API if it isn't already enabled.
+          # Note: enabling the API requires the active service account to have
+          # permission to enable services (serviceusage.services.enable). If the
+          # uploader SA lacks that permission, this command will fail and we
+          # provide a clear diagnostic so the human can enable the API.
+          echo "Ensuring Secret Manager API is enabled for project $FIREBASE_PROJECT_ID..."
+          if ! gcloud services enable secretmanager.googleapis.com --project="$FIREBASE_PROJECT_ID" --quiet; then
+            echo "WARNING: Could not enable Secret Manager API. If this is due to lack of permission, please enable the API in the GCP console:"
+            echo "https://console.developers.google.com/apis/api/secretmanager.googleapis.com/overview?project=$FIREBASE_PROJECT_ID"
+            echo "Continuing to attempt secret creation; the next command may fail if the API is disabled."
+          fi
+
+          SECRET_NAME=${FIREBASE_SECRET_NAME:-'firebase-service-account'}
+          if ! gcloud secrets describe "$SECRET_NAME" >/dev/null 2>&1; then
+            gcloud secrets create "$SECRET_NAME" --replication-policy="automatic"
+          fi
+          gcloud secrets versions add "$SECRET_NAME" --data-file=/tmp/firebase.json
