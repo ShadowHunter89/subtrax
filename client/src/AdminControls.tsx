@@ -56,7 +56,16 @@ const AdminControls: React.FC = () => {
     doc.text(headers.join(' | '), 10, y);
     y += 10;
     users.forEach(user => {
-      doc.text(headers.map(h => String(user[h] ?? '')).join(' | '), 10, y);
+      doc.text(
+        [
+          user.id ?? '',
+          user.email ?? '',
+          user.tier ?? '',
+          user.banned ? 'true' : 'false'
+        ].join(' | '),
+        10,
+        y
+      );
       y += 8;
     });
     doc.save('users.pdf');

@@ -3,7 +3,13 @@
 // const res = await fetch('/api/payments/create', { method: 'POST', body: JSON.stringify({ provider: 'jazzcash', amount: 1000, title: 'Pro', returnUrl: 'https://.../payments/return/jazzcash' }) });
 // const data = await res.json(); if (data.checkout) submitJazzCashForm(data.checkout);
 
-export function submitJazzCashForm(checkout) {
+interface JazzCashCheckout {
+  method: string;
+  url: string;
+  params?: Record<string, unknown>;
+}
+
+export function submitJazzCashForm(checkout: JazzCashCheckout) {
   if (!checkout || checkout.method !== 'POST' || !checkout.url) throw new Error('invalid checkout payload');
   const form = document.createElement('form');
   form.method = 'POST';

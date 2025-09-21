@@ -1,11 +1,13 @@
 services:
   - type: web
-    name: subtrax-backend
+    name: subtrax-server
     runtime: node
     plan: free
     buildCommand: "npm install"
     startCommand: "node server.js"
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: STRIPE_SECRET_KEY
         value: your_stripe_secret_key
       - key: FRONTEND_URL
