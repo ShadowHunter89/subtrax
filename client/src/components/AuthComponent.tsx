@@ -23,12 +23,30 @@ import {
   Lock,
   Person
 } from '@mui/icons-material';
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import '../styles.css';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+}
+
+interface AuthComponentProps {
+  onSuccess?: () => void;
+}
+
+interface CustomAlertProps {
+  severity: 'error' | 'success';
+  children: React.ReactNode;
+}
+
+function CustomAlert({ severity, children }: CustomAlertProps) {
+  return (
+    <div className={`auth-alert ${severity}`}>
+      {children}
+    </div>
+  );
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -40,18 +58,15 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`auth-tabpanel-${index}`}
       aria-labelledby={`auth-tab-${index}`}
+      className="auth-tab-panel"
       {...other}
     >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
+      {value === index && children}
     </div>
   );
 }
 
-export default function AuthComponent({ onSuccess }: { onSuccess?: () => void }) {
+export default function AuthComponent({ onSuccess }: AuthComponentProps) {
   const [tab, setTab] = useState(0);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -120,315 +135,311 @@ export default function AuthComponent({ onSuccess }: { onSuccess?: () => void })
   };
 
   return (
-    <Card sx={{ maxWidth: 500, mx: 'auto', mt: 4 }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+    <div className="auth-container">
+      <div className="auth-tabs">
         <Tabs value={tab} onChange={handleTabChange} aria-label="auth tabs">
           <Tab label="Sign In" />
           <Tab label="Sign Up" />
           <Tab label="Reset Password" />
         </Tabs>
-      </Box>
+      </div>
 
       <form onSubmit={handleSubmit}>
         <TabPanel value={tab} index={0}>
-          <Typography variant="h5" component="h1" gutterBottom align="center">
-            Welcome Back
-          </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Sign in to access your subscription dashboard
-          </Typography>
+          <div className="auth-header">
+            <h1 className="auth-title">Welcome Back</h1>
+            <p className="auth-subtitle">
+              Sign in to access your subscription dashboard
+            </p>
+          </div>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <CustomAlert severity="error">
               {error}
-            </Alert>
+            </CustomAlert>
           )}
           {message && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <CustomAlert severity="success">
               {message}
-            </Alert>
+            </CustomAlert>
           )}
 
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <div className="auth-form">
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            sx={{ mb: 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </Button>
-
-          <Divider sx={{ my: 2 }}>OR</Divider>
-
-          <Button
-            fullWidth
-            variant="outlined"
-            size="large"
-            startIcon={<Google />}
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            Continue with Google
-          </Button>
-
-          <Box textAlign="center">
-            <Link
-              component="button"
-              type="button"
-              onClick={() => setTab(2)}
-              underline="hover"
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
             >
-              Forgot your password?
-            </Link>
-          </Box>
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+
+            <div className="auth-divider">
+              <span>OR</span>
+            </div>
+
+            <button
+              type="button"
+              className="auth-google-btn"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <Google />
+              Continue with Google
+            </button>
+
+            <div className="auth-link-section">
+              <button
+                type="button"
+                className="auth-link"
+                onClick={() => setTab(2)}
+              >
+                Forgot your password?
+              </button>
+            </div>
+          </div>
         </TabPanel>
 
         <TabPanel value={tab} index={1}>
-          <Typography variant="h5" component="h1" gutterBottom align="center">
-            Create Account
-          </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Join Subtrax and start optimizing your subscriptions
-          </Typography>
+          <div className="auth-header">
+            <h1 className="auth-title">Create Account</h1>
+            <p className="auth-subtitle">
+              Join Subtrax and start optimizing your subscriptions
+            </p>
+          </div>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <CustomAlert severity="error">
               {error}
-            </Alert>
+            </CustomAlert>
           )}
           {message && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <CustomAlert severity="success">
               {message}
-            </Alert>
+            </CustomAlert>
           )}
 
-          <TextField
-            fullWidth
-            label="Full Name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <div className="auth-form">
+            <TextField
+              fullWidth
+              label="Full Name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Person />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            sx={{ mb: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              ),
-            }}
-          />
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            sx={{ mb: 2 }}
-            helperText="At least 6 characters"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              helperText="At least 6 characters"
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <TextField
-            fullWidth
-            label="Confirm Password"
-            type={showPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            sx={{ mb: 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock />
-                </InputAdornment>
-              ),
-            }}
-          />
+            <TextField
+              fullWidth
+              label="Confirm Password"
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </Button>
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
 
-          <Divider sx={{ my: 2 }}>OR</Divider>
+            <div className="auth-divider">
+              <span>OR</span>
+            </div>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            size="large"
-            startIcon={<Google />}
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            Sign up with Google
-          </Button>
+            <button
+              type="button"
+              className="auth-google-btn"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+            >
+              <Google />
+              Sign up with Google
+            </button>
 
-          <Box textAlign="center">
-            <Typography variant="body2" color="text.secondary">
-              Already have an account?{' '}
-              <Link
-                component="button"
-                type="button"
-                onClick={() => setTab(0)}
-                underline="hover"
-              >
-                Sign in
-              </Link>
-            </Typography>
-          </Box>
+            <div className="auth-link-section">
+              <p className="auth-subtitle">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  className="auth-link"
+                  onClick={() => setTab(0)}
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
+          </div>
         </TabPanel>
 
         <TabPanel value={tab} index={2}>
-          <Typography variant="h5" component="h1" gutterBottom align="center">
-            Reset Password
-          </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Enter your email address and we'll send you a link to reset your password
-          </Typography>
+          <div className="auth-header">
+            <h1 className="auth-title">Reset Password</h1>
+            <p className="auth-subtitle">
+              Enter your email address and we'll send you a link to reset your password
+            </p>
+          </div>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <CustomAlert severity="error">
               {error}
-            </Alert>
+            </CustomAlert>
           )}
           {message && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <CustomAlert severity="success">
               {message}
-            </Alert>
+            </CustomAlert>
           )}
 
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            sx={{ mb: 3 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Email />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <div className="auth-form">
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="auth-field"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            disabled={loading}
-            sx={{ mb: 2 }}
-          >
-            {loading ? 'Sending...' : 'Send Reset Email'}
-          </Button>
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
+              {loading ? 'Sending...' : 'Send Reset Email'}
+            </button>
 
-          <Box textAlign="center">
-            <Typography variant="body2" color="text.secondary">
-              Remember your password?{' '}
-              <Link
-                component="button"
-                type="button"
-                onClick={() => setTab(0)}
-                underline="hover"
-              >
-                Sign in
-              </Link>
-            </Typography>
-          </Box>
+            <div className="auth-link-section">
+              <p className="auth-subtitle">
+                Remember your password?{' '}
+                <button
+                  type="button"
+                  className="auth-link"
+                  onClick={() => setTab(0)}
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
+          </div>
         </TabPanel>
       </form>
-    </Card>
+    </div>
   );
 }
