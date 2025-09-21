@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './styles.css';
 import { Paper, Typography, Button, Stack, Box } from '@mui/material';
 import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -86,7 +87,7 @@ const AISuggestions: React.FC = () => {
             <Typography variant="body2" color="text.secondary">{s.description}</Typography>
             <Box mt={1} mb={1}>
               <Typography variant="caption" color="text.secondary">Preview:</Typography>
-              <pre style={{ background: '#f5f5f5', padding: 8, borderRadius: 4 }}>{s.diff}</pre>
+              <pre className="diff-preview">{s.diff}</pre>
             </Box>
             <Stack direction="row" spacing={2}>
               <Button variant="contained" color="success" disabled={s.applied} onClick={() => handleApprove(s.id)}>

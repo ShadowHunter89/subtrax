@@ -1,0 +1,19 @@
+# Render Deployment Configuration for Subtrax MVP
+
+# Build Command (for static site or client build)
+cd client && npm install && npm run build
+
+# Start Command (for server)
+cd server && npm install && npm start
+
+# Environment Variables Required:
+# FIREBASE_PROJECT_ID
+# FIREBASE_SERVICE_ACCOUNT_BASE64  
+# OPENAI_API_KEY
+# REDIS_URL (optional)
+
+# Static Files Path
+client/build
+
+# Node Version
+20.x

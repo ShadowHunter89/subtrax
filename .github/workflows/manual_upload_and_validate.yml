@@ -44,49 +44,51 @@ jobs:
             ls -la || true
             exit 1
           fi
-      - name: Setup gcloud (authenticate)
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
-
       - name: Check for required secrets
         run: |
           if [ -z "${{ secrets.GCP_SA_KEY }}" ] || [ -z "${{ secrets.FIREBASE_ACCOUNT_JSON }}" ] || [ -z "${{ secrets.FIREBASE_PROJECT_ID }}" ]; then
             echo "ERROR: One or more required secrets (GCP_SA_KEY, FIREBASE_ACCOUNT_JSON, FIREBASE_PROJECT_ID) are missing."
             exit 1
           fi
-      - name: Ensure gcloud is installed
-        run: |
-          if ! command -v gcloud >/dev/null 2>&1; then
-            echo "ERROR: gcloud CLI is not installed. Please install gcloud before running this workflow."
-            exit 1
-          fi
-      - name: Upload firebase secret (if available)
+          echo "All required secrets are present"
+          
+      - name: Setup gcloud (authenticate)
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.FIREBASE_PROJECT_ID }}
+      - name: Upload firebase secret
         env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
           FIREBASE_ACCOUNT_JSON: ${{ secrets.FIREBASE_ACCOUNT_JSON }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_SECRET_NAME: ${{ secrets.FIREBASE_SECRET_NAME }}
         run: |
-          echo "Checking for required secrets before attempting upload..."
           echo "Preparing to upload firebase secret via gcloud..."
-          echo "$GCP_SA_KEY" > /tmp/sa.json
+          
+          # Write secret to temp file with proper permissions
           echo "$FIREBASE_ACCOUNT_JSON" > /tmp/firebase.json
-          gcloud auth activate-service-account --key-file=/tmp/sa.json
-          gcloud config set project "$FIREBASE_PROJECT_ID"
+          chmod 600 /tmp/firebase.json
+          
+          # Enable Secret Manager API
           echo "Ensuring Secret Manager API is enabled for project $FIREBASE_PROJECT_ID..."
           if ! gcloud services enable secretmanager.googleapis.com --project="$FIREBASE_PROJECT_ID" --quiet; then
-            echo "WARNING: Could not enable Secret Manager API. If this is due to lack of permission, please enable the API in the GCP console:"
+            echo "WARNING: Could not enable Secret Manager API. Please enable it manually in GCP console."
             echo "https://console.developers.google.com/apis/api/secretmanager.googleapis.com/overview?project=$FIREBASE_PROJECT_ID"
-            echo "Continuing to attempt secret creation; the next command may fail if the API is disabled."
           fi
-          SECRET_NAME=${FIREBASE_SECRET_NAME:-'firebase-service-account'}
-          if ! gcloud secrets describe "$SECRET_NAME" >/dev/null 2>&1; then
-            gcloud secrets create "$SECRET_NAME" --replication-policy="automatic"
-          fi
-          gcloud secrets versions add "$SECRET_NAME" --data-file=/tmp/firebase.json
-          echo "Firebase secret uploaded successfully to $SECRET_NAME"
           
-          # Clean up temporary files
-          rm -f /tmp/sa.json /tmp/firebase.json
+          # Create or update secret
+          SECRET_NAME=${FIREBASE_SECRET_NAME:-'firebase-service-account'}
+          echo "Working with secret: $SECRET_NAME"
+          
+          if ! gcloud secrets describe "$SECRET_NAME" --project="$FIREBASE_PROJECT_ID" >/dev/null 2>&1; then
+            echo "Creating new secret: $SECRET_NAME"
+            gcloud secrets create "$SECRET_NAME" --replication-policy="automatic" --project="$FIREBASE_PROJECT_ID"
+          else
+            echo "Secret $SECRET_NAME already exists, adding new version"
+          fi
+          
+          gcloud secrets versions add "$SECRET_NAME" --data-file=/tmp/firebase.json --project="$FIREBASE_PROJECT_ID"
+          echo "✅ Firebase secret uploaded successfully to $SECRET_NAME"
+          
+          # Secure cleanup
+          rm -f /tmp/firebase.json

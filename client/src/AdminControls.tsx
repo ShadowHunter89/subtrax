@@ -3,6 +3,7 @@ import { db, auth } from './firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Chip, TextField, Stack } from '@mui/material';
+import { ExportData, exportToExcel } from './lib/exportUtils';
 
 interface User {
   id: string;
@@ -41,12 +42,9 @@ const AdminControls: React.FC = () => {
 
   // Export helpers
   const exportExcel = async () => {
-    const XLSX = await import('xlsx');
     const headers = ['id', 'email', 'tier', 'banned'];
-    const ws = XLSX.utils.json_to_sheet(users, { header: headers });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Users');
-    XLSX.writeFile(wb, 'users.xlsx');
+    const exportData: ExportData = { headers, rows: users };
+    await exportToExcel(exportData, { filename: 'users.xlsx', sanitizeData: true });
   };
   const exportPDF = async () => {
     const jsPDF = (await import('jspdf')).default;

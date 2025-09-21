@@ -7,9 +7,9 @@ import { getFirestore, Firestore } from "firebase/firestore";
 // Use environment variables for security and flexibility
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "subtrax-4964f.firebaseapp.com",
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "subtrax-4964f",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "subtrax-4964f.appspot.com",
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
@@ -25,9 +25,9 @@ const missing = required.filter(k => !process.env[k]);
 if (missing.length) {
   // eslint-disable-next-line no-console
   console.warn('Missing Firebase env vars:', missing.join(', '));
-  // Also show the expected project id from example to help you validate
+  // Also show the expected project id from your service account
   // eslint-disable-next-line no-console
-  console.info('Expected project id (example): subtrax-4964f — ensure your REACT_APP_FIREBASE_PROJECT_ID matches this if applicable');
+  console.info('Expected project id: subtrax-4964f — ensure your REACT_APP_FIREBASE_PROJECT_ID matches this');
 }
 
 // Prevent re-initialization in dev/hot-reload
