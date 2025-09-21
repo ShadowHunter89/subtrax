@@ -59,6 +59,21 @@ app.use('/api/payments', paymentsRouter);
 const billingRouter = require('./billingRouter');
 app.use('/api/billing', billingRouter);
 
+// Homepage route
+app.get('/', (req, res) => {
+  res.send(`
+    <h1>Welcome to Subtrax API</h1>
+    <p>This is the backend service for Subtrax.</p>
+    <ul>
+      <li>Health check: <a href="/api/health">/api/health</a></li>
+      <li>Optimize subscriptions: POST /api/optimize</li>
+      <li>Payments: /api/payments</li>
+      <li>Billing: /api/billing</li>
+    </ul>
+    <p>See README for full API documentation.</p>
+  `);
+});
+
 
 // Example API endpoint
 app.get('/api/health', (req, res) => {
