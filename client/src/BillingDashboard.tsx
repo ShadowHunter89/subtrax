@@ -1,7 +1,26 @@
 import React, { useEffect, useState } from 'react';
+import './styles.css';
+
+interface BillingEntry {
+  id: string;
+  provider: string;
+  provider_tx_id?: string;
+  amount: number;
+  currency: string;
+  status: string;
+  timestamp: string;
+  metadata?: {
+    raw?: {
+      order_id?: string;
+      tx?: string;
+      transaction_id?: string;
+      alert_id?: string;
+    };
+  };
+}
 
 export default function BillingDashboard() {
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<BillingEntry[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   useEffect(() => {
     fetch('/api/billing/entries')
@@ -14,32 +33,68 @@ export default function BillingDashboard() {
     setSelected(s => ({ ...s, [id]: !s[id] }));
   };
 
+  const getTransactionId = (entry: BillingEntry): string => {
+    return entry.provider_tx_id || 
+           (entry.metadata?.raw?.order_id) ||
+           (entry.metadata?.raw?.tx) ||
+           (entry.metadata?.raw?.transaction_id) ||
+           (entry.metadata?.raw?.alert_id) ||
+           '';
+  };
+
   const exportCsv = (useSelected = false) => {
-    const rows = (useSelected ? entries.filter(e => selected[e.id]) : entries).map(e => ({ id: e.id, provider: e.provider, provider_tx_id: e.provider_tx_id, amount: e.amount, currency: e.currency, status: e.status, timestamp: e.timestamp }));
+    const filteredEntries = useSelected ? entries.filter(e => selected[e.id]) : entries;
+    const rows = filteredEntries.map(e => ({ 
+      id: e.id, 
+      provider: e.provider, 
+      provider_tx_id: getTransactionId(e), 
+      amount: e.amount, 
+      currency: e.currency, 
+      status: e.status, 
+      timestamp: e.timestamp 
+    }));
+    
     if (rows.length === 0) return alert('No rows to export');
-    const csv = [Object.keys(rows[0]).join(',')].concat(rows.map(r => Object.values(r).map(v => '"' + String(v || '') + '"').join(','))).join('\n');
+    
+    const csv = [Object.keys(rows[0]).join(',')]
+      .concat(rows.map(r => Object.values(r).map(v => '"' + String(v || '') + '"').join(',')))
+      .join('\n');
+    
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `billing-${Date.now()}.csv`; document.body.appendChild(a); a.click(); a.remove();
+    a.href = url; 
+    a.download = `billing-${Date.now()}.csv`; 
+    document.body.appendChild(a); 
+    a.click(); 
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const bulkReconcile = async () => {
     const sel = entries.filter(e => selected[e.id]);
     if (sel.length === 0) return alert('No entries selected');
+    
     // group by provider
-    const byProv = {} as Record<string, string[]>;
+    const byProv: Record<string, string[]> = {};
     for (const e of sel) {
-      if (!e.provider_tx_id) continue;
+      const txId = getTransactionId(e);
+      if (!txId) continue;
       byProv[e.provider] = byProv[e.provider] || [];
-      byProv[e.provider].push(e.provider_tx_id);
+      byProv[e.provider].push(txId);
     }
+    
     let total = 0;
     for (const prov of Object.keys(byProv)) {
-      const res = await fetch('/api/billing/reconcile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: prov, provider_tx_ids: byProv[prov] }) });
+      const res = await fetch('/api/billing/reconcile', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ provider: prov, provider_tx_ids: byProv[prov] }) 
+      });
       const j = await res.json();
       if (j && j.updated) total += j.updated.length;
     }
+    
     alert(`Reconciled ${total} entries`);
     const fresh = await fetch('/api/billing/entries').then(r => r.json());
     setEntries(fresh.entries || []);
@@ -49,12 +104,19 @@ export default function BillingDashboard() {
   const editEntry = async (id: string) => {
     const amount = prompt('New amount (leave blank to keep)');
     const status = prompt('New status (leave blank to keep)');
-    const payload: any = {};
+    const payload: Partial<Pick<BillingEntry, 'amount' | 'status'>> = {};
+    
     if (amount !== null && amount !== '') payload.amount = Number(amount);
     if (status !== null && status !== '') payload.status = status;
     if (Object.keys(payload).length === 0) return;
-    const res = await fetch(`/api/billing/entry/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    
+    const res = await fetch(`/api/billing/entry/${id}`, { 
+      method: 'PATCH', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(payload) 
+    });
     const j = await res.json();
+    
     if (j.ok) {
       alert('Updated');
       const fresh = await fetch('/api/billing/entries').then(r => r.json());
@@ -65,9 +127,15 @@ export default function BillingDashboard() {
   };
 
   const reconcile = async (provider: string, txId: string) => {
-    if (!txId) return alert('No tx id');
-    const res = await fetch('/api/billing/reconcile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, provider_tx_id: txId }) });
+    if (!txId) return alert('No transaction ID available');
+    
+    const res = await fetch('/api/billing/reconcile', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ provider, provider_tx_id: txId }) 
+    });
     const j = await res.json();
+    
     if (j.ok) {
       alert('Reconciled ' + (j.updated || []).length + ' entries');
       // refresh
@@ -79,44 +147,76 @@ export default function BillingDashboard() {
   };
 
   return (
-    <div>
-      <h3>Billing Ledger</h3>
-      <div style={{ marginBottom: 8 }}>
-        <button onClick={() => exportCsv(false)}>Export all CSV</button>
-        <button onClick={() => exportCsv(true)} style={{ marginLeft: 8 }}>Export selected CSV</button>
-        <button onClick={bulkReconcile} style={{ marginLeft: 8 }}>Bulk Reconcile</button>
+    <div className="billing-dashboard">
+      <div className="billing-header">
+        <h3>Billing Ledger</h3>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="billing-controls">
+        <button className="billing-btn" onClick={() => exportCsv(false)}>
+          Export all CSV
+        </button>
+        <button className="billing-btn" onClick={() => exportCsv(true)}>
+          Export selected CSV
+        </button>
+        <button className="billing-btn" onClick={bulkReconcile}>
+          Bulk Reconcile
+        </button>
+      </div>
+      <table className="billing-table">
         <thead>
           <tr>
-            <th></th>
+            <th>Select</th>
             <th>ID</th>
             <th>Provider</th>
-            <th>TX</th>
+            <th>Transaction ID</th>
             <th>Amount</th>
             <th>Currency</th>
             <th>Status</th>
-            <th>When</th>
+            <th>Timestamp</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-        {entries.map(e => (
-          <tr key={e.id}>
-            <td><input type="checkbox" checked={!!selected[e.id]} onChange={() => toggleSelect(e.id)} /></td>
-            <td>{e.id}</td>
-            <td>{e.provider}</td>
-            <td>{e.provider_tx_id || (e.metadata && e.metadata.raw && (e.metadata.raw.order_id || e.metadata.raw.tx || e.metadata.raw.transaction_id || e.metadata.raw.alert_id)) || ''}</td>
-            <td>{e.amount}</td>
-            <td>{e.currency}</td>
-            <td>{e.status}</td>
-            <td>{new Date(e.timestamp).toLocaleString()}</td>
-            <td>
-              <button onClick={() => reconcile(e.provider, e.provider_tx_id || (e.metadata && e.metadata.raw && (e.metadata.raw.order_id || e.metadata.raw.tx || e.metadata.raw.transaction_id || e.metadata.raw.alert_id)))}>Reconcile</button>
-              <button onClick={() => editEntry(e.id)} style={{ marginLeft: 8 }}>Edit</button>
-            </td>
-          </tr>
-        ))}
+        {entries.map(e => {
+          const txId = getTransactionId(e);
+          return (
+            <tr key={e.id}>
+              <td>
+                <label className="billing-checkbox-label" htmlFor={`checkbox-${e.id}`}>
+                  <input 
+                    id={`checkbox-${e.id}`}
+                    type="checkbox" 
+                    className="billing-checkbox"
+                    checked={!!selected[e.id]} 
+                    onChange={() => toggleSelect(e.id)}
+                    aria-label={`Select billing entry ${e.id}`}
+                  />
+                </label>
+              </td>
+              <td>{e.id}</td>
+              <td>{e.provider}</td>
+              <td>{txId}</td>
+              <td>{e.amount}</td>
+              <td>{e.currency}</td>
+              <td>{e.status}</td>
+              <td>{new Date(e.timestamp).toLocaleString()}</td>
+              <td>
+                <div className="billing-actions">
+                  <button 
+                    className="billing-btn" 
+                    onClick={() => reconcile(e.provider, txId)}
+                    disabled={!txId}
+                  >
+                    Reconcile
+                  </button>
+                  <button className="billing-btn" onClick={() => editEntry(e.id)}>
+                    Edit
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        })}
         </tbody>
       </table>
     </div>
