@@ -1,184 +1,311 @@
+import React, { useState } from 'react';
+import './styles.css';
 
-import React, { useState } from "react";
-import "./styles.css";
+interface LandingPageProps {
+  onNavigate: (section: string) => void;
+}
 
-const accent = "#7F5AF0";
-const bg = "#16161a";
-const text = "#fffffe";
-const highlight = "#2cb67d";
-const muted = "#94a1b2";
+interface Testimonial {
+  name: string;
+  review: string;
+  avatar: string;
+}
 
-const testimonials = [
+interface FAQ {
+  question: string;
+  answer: string;
+}
+
+const testimonials: Testimonial[] = [
   {
-    name: "Ayesha K.",
-    quote: "Subtrax helped me save $30/month and discover new deals! The dashboard is a game changer.",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg"
+    name: "Sarah M.",
+    review: "The best financial tracking tool I've ever used! Clean interface and powerful features.",
+    avatar: "https://api.dicebear.com/7.x/micah/svg?seed=Sarah",
   },
   {
-    name: "Omar R.",
-    quote: "I love the AI suggestions. I never realized how much I was overspending on subscriptions.",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+    name: "Ahmed K.",
+    review: "Finally, a Pakistani payment solution that actually works seamlessly. Highly recommended!",
+    avatar: "https://api.dicebear.com/7.x/micah/svg?seed=Ahmed",
   },
   {
-    name: "Fatima S.",
-    quote: "The payment integrations are seamless. Subtrax is now my go-to for managing subscriptions.",
-    avatar: "https://randomuser.me/api/portraits/women/68.jpg"
-  }
+    name: "Fatima R.",
+    review: "The analytics insights have completely changed how I manage my subscription business.",
+    avatar: "https://api.dicebear.com/7.x/micah/svg?seed=Fatima",
+  },
 ];
 
-const faqs = [
+const faqs: FAQ[] = [
   {
-    q: "How does Subtrax optimize my subscriptions?",
-    a: "We use AI to analyze your usage and spending, then suggest ways to save or discover better deals."
+    question: "Is my financial data secure?",
+    answer: "Yes! We use bank-level encryption and never store sensitive payment information. All data is encrypted in transit and at rest.",
   },
   {
-    q: "Is my data secure?",
-    a: "Yes, we use industry-standard encryption and never share your data without consent."
+    question: "Which Pakistani payment methods are supported?",
+    answer: "We support JazzCash, EasyPaisa, bank transfers, and credit/debit cards through secure local gateways.",
   },
   {
-    q: "Can I use Subtrax for business subscriptions?",
-    a: "Absolutely! Our dashboard works for individuals and businesses alike."
-  }
+    question: "Can I cancel my subscription anytime?",
+    answer: "Absolutely! You can cancel your subscription at any time. No hidden fees or cancellation charges.",
+  },
+  {
+    question: "Do you offer customer support?",
+    answer: "Yes, we provide email support and live chat during business hours. Premium users get priority support.",
+  },
 ];
 
-export default function LandingPage() {
-  const [email, setEmail] = useState("");
+const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
+  const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  function handleSubscribe(e: React.FormEvent) {
+  const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     setSubscribed(true);
-    setEmail("");
-  }
+    setEmail('');
+  };
 
   return (
-    <div style={{ background: bg, minHeight: "100vh", color: text, fontFamily: 'Inter, sans-serif' }}>
-      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "2rem 4rem", background: accent, flexWrap: "wrap" }}>
-        <span style={{ fontWeight: 700, fontSize: "2rem", color: text }}>Subtrax</span>
-        <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
-          <a href="#features" style={{ color: text, textDecoration: "none" }}>Features</a>
-          <a href="#pricing" style={{ color: text, textDecoration: "none" }}>Pricing</a>
-          <a href="#testimonials" style={{ color: text, textDecoration: "none" }}>Testimonials</a>
-          <a href="#faq" style={{ color: text, textDecoration: "none" }}>FAQ</a>
-          <a href="#contact" style={{ color: text, textDecoration: "none" }}>Contact</a>
+    <div className="page-container">
+      {/* Navigation */}
+      <nav className="nav-bar">
+        <div className="content-container">
+          <div className="nav-container">
+            <div className="landing-logo">Subtrax</div>
+            <div className="landing-nav-links">
+              <a href="#features" className="nav-link">Features</a>
+              <a href="#pricing" className="nav-link">Pricing</a>
+              <a href="#testimonials" className="nav-link">Reviews</a>
+              <a href="#faq" className="nav-link">FAQ</a>
+            </div>
+          </div>
         </div>
       </nav>
-      <header style={{ textAlign: "center", padding: "6rem 2rem 3rem 2rem", position: "relative" }}>
-        <h1 style={{ fontSize: "3.5rem", fontWeight: 800, color: accent, marginBottom: "1rem", letterSpacing: "-2px", animation: "fadeIn 1.5s" }}>
-          Optimize Your Subscriptions
-        </h1>
-        <p style={{ fontSize: "1.5rem", color: muted, margin: "2rem 0", animation: "fadeIn 2s" }}>
-          Save money, discover new deals, and manage all your subscriptions in one place.
-        </p>
-        <a href="#signup" style={{ background: highlight, color: bg, padding: "1rem 2.5rem", borderRadius: "2rem", fontWeight: 700, fontSize: "1.25rem", textDecoration: "none", boxShadow: "0 4px 24px #2cb67d55", animation: "fadeIn 2.5s" }}>
-          Get Started Free
-        </a>
-        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: -1 }}>
-          <svg width="100%" height="100" viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", top: "-40px" }}>
-            <path d="M0,40 C480,120 960,-40 1440,40 L1440,100 L0,100 Z" fill={accent} opacity="0.15" />
-          </svg>
+
+      {/* Hero Section */}
+      <header className="landing-header">
+        <div className="content-container">
+          <h1 className="landing-hero-title">
+            Pakistani Subscription Management Made Simple
+          </h1>
+          <p className="landing-hero-subtitle">
+            Track, manage, and optimize your subscriptions with Pakistan's most trusted platform. 
+            Supports JazzCash, EasyPaisa, and all major local payment methods.
+          </p>
+          <a href="#pricing" className="landing-hero-cta">
+            Start Free Trial
+          </a>
         </div>
       </header>
-      <section id="features" style={{ padding: "4rem 2rem", background: accent, color: text }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700 }}>Features</h2>
-        <ul style={{ listStyle: "none", padding: 0, margin: "2rem 0", display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
-          <li style={{ background: bg, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "220px", boxShadow: "0 2px 12px #7F5AF055" }}>
-            <strong>Smart Optimization</strong><br />AI-powered suggestions to reduce costs.
-          </li>
-          <li style={{ background: bg, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "220px", boxShadow: "0 2px 12px #7F5AF055" }}>
-            <strong>Personalized Dashboard</strong><br />Track all your subscriptions in one place.
-          </li>
-          <li style={{ background: bg, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "220px", boxShadow: "0 2px 12px #7F5AF055" }}>
-            <strong>Payment Integration</strong><br />Supports Stripe, JazzCash, EasyPaisa, and more.
-          </li>
-          <li style={{ background: bg, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "220px", boxShadow: "0 2px 12px #7F5AF055" }}>
-            <strong>Host-Agnostic</strong><br />Works on Render, Vercel, Netlify, and more.
-          </li>
-        </ul>
-      </section>
-      <section id="pricing" style={{ padding: "4rem 2rem", background: bg, color: text }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700, color: accent }}>Pricing</h2>
-        <div style={{ display: "flex", gap: "2rem", justifyContent: "center", marginTop: "2rem", flexWrap: "wrap" }}>
-          <div style={{ background: accent, color: text, borderRadius: "1rem", padding: "2rem 3rem", minWidth: "220px", boxShadow: "0 2px 12px #7F5AF055" }}>
-            <strong>Free</strong><br />Basic optimization & dashboard<br /><span style={{ fontWeight: 700, fontSize: "1.5rem" }}>$0</span>
-          </div>
-          <div style={{ background: highlight, color: bg, borderRadius: "1rem", padding: "2rem 3rem", minWidth: "220px", boxShadow: "0 2px 12px #2cb67d55" }}>
-            <strong>Pro</strong><br />Advanced AI, integrations, priority support<br /><span style={{ fontWeight: 700, fontSize: "1.5rem" }}>$9/mo</span>
-          </div>
-        </div>
-      </section>
-      <section id="testimonials" style={{ padding: "4rem 2rem", background: accent, color: text }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700, textAlign: "center" }}>What Our Users Say</h2>
-        <div style={{ display: "flex", gap: "2rem", justifyContent: "center", flexWrap: "wrap", marginTop: "2rem" }}>
-          {testimonials.map((t, i) => (
-            <div key={i} style={{ background: bg, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "260px", maxWidth: "320px", boxShadow: "0 2px 12px #7F5AF055", textAlign: "center" }}>
-              <img src={t.avatar} alt={t.name} style={{ width: "64px", height: "64px", borderRadius: "50%", marginBottom: "1rem" }} />
-              <blockquote style={{ fontStyle: "italic", marginBottom: "1rem" }}>
-                "{t.quote}"
-              </blockquote>
-              <span style={{ fontWeight: 700 }}>{t.name}</span>
+
+      {/* Features Section */}
+      <section id="features" className="landing-section features-section">
+        <div className="content-container">
+          <h2 className="section-title">Powerful Features Built for Pakistan</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">📱</div>
+              <h3 className="feature-title">Multi-Platform Access</h3>
+              <p className="feature-description">
+                Access your subscription data from web, mobile, or tablet. Synchronized across all devices.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
-      <section id="faq" style={{ padding: "4rem 2rem", background: bg, color: text }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700, color: accent, textAlign: "center" }}>FAQ</h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center", marginTop: "2rem" }}>
-          {faqs.map((f, i) => (
-            <div key={i} style={{ background: accent, color: text, borderRadius: "1rem", padding: "2rem", minWidth: "260px", maxWidth: "320px", boxShadow: "0 2px 12px #7F5AF055" }}>
-              <strong>{f.q}</strong>
-              <p style={{ color: muted, marginTop: "1rem" }}>{f.a}</p>
+            <div className="feature-card">
+              <div className="feature-icon">💰</div>
+              <h3 className="feature-title">Pakistani Payment Support</h3>
+              <p className="feature-description">
+                Native support for JazzCash, EasyPaisa, and local banking systems with PKR currency.
+              </p>
             </div>
-          ))}
+            <div className="feature-card">
+              <div className="feature-icon">📊</div>
+              <h3 className="feature-title">Smart Analytics</h3>
+              <p className="feature-description">
+                AI-powered insights to optimize your subscription spending and identify cost savings.
+              </p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">🔒</div>
+              <h3 className="feature-title">Bank-Level Security</h3>
+              <p className="feature-description">
+                End-to-end encryption with compliance to Pakistani financial regulations.
+              </p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">⚡</div>
+              <h3 className="feature-title">Real-Time Notifications</h3>
+              <p className="feature-description">
+                Get instant alerts for renewals, price changes, and payment failures.
+              </p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon">📈</div>
+              <h3 className="feature-title">Business Insights</h3>
+              <p className="feature-description">
+                Track subscriber growth, churn rates, and revenue trends for your business.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
-      <section id="newsletter" style={{ padding: "4rem 2rem", background: accent, color: text, textAlign: "center" }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700 }}>Stay Updated</h2>
-        <form onSubmit={handleSubscribe} style={{ marginTop: "2rem", display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Your email address"
-            required
-            style={{ padding: "1rem", borderRadius: "2rem", border: "none", minWidth: "220px", fontSize: "1rem" }}
-          />
-          <button type="submit" style={{ background: highlight, color: bg, padding: "1rem 2rem", borderRadius: "2rem", fontWeight: 700, fontSize: "1rem", border: "none", boxShadow: "0 2px 12px #2cb67d55" }}>
-            Subscribe
-          </button>
-        </form>
-        {subscribed && <p style={{ color: bg, background: highlight, display: "inline-block", padding: "0.5rem 1rem", borderRadius: "1rem", marginTop: "1rem" }}>Thank you for subscribing!</p>}
-      </section>
-      <section id="contact" style={{ padding: "4rem 2rem", background: accent, color: text, textAlign: "center" }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: 700 }}>Contact Us</h2>
-        <p style={{ color: muted }}>Questions? Email <a href="mailto:support@subtrax.app" style={{ color: highlight }}>support@subtrax.app</a></p>
-        <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center", gap: "2rem" }}>
-          <a href="https://twitter.com/subtraxapp" target="_blank" rel="noopener noreferrer" style={{ color: text, fontSize: "2rem" }}>
-            <span role="img" aria-label="Twitter">🐦</span>
-          </a>
-          <a href="https://facebook.com/subtraxapp" target="_blank" rel="noopener noreferrer" style={{ color: text, fontSize: "2rem" }}>
-            <span role="img" aria-label="Facebook">📘</span>
-          </a>
-          <a href="https://instagram.com/subtraxapp" target="_blank" rel="noopener noreferrer" style={{ color: text, fontSize: "2rem" }}>
-            <span role="img" aria-label="Instagram">📸</span>
-          </a>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="landing-section pricing-section">
+        <div className="content-container">
+          <h2 className="section-title">Simple, Transparent Pricing</h2>
+          <div className="pricing-container">
+            <div className="pricing-card pricing-card-free">
+              <h3 className="pricing-title">Free</h3>
+              <div className="pricing-price">PKR 0<span className="pricing-period">/month</span></div>
+              <ul className="pricing-features">
+                <li>Up to 5 subscriptions</li>
+                <li>Basic analytics</li>
+                <li>Email support</li>
+                <li>Mobile app access</li>
+              </ul>
+              <button 
+                className="pricing-button" 
+                onClick={() => onNavigate('auth')}
+              >
+                Get Started Free
+              </button>
+            </div>
+            <div className="pricing-card pricing-card-pro">
+              <h3 className="pricing-title">Professional</h3>
+              <div className="pricing-price">PKR 1,500<span className="pricing-period">/month</span></div>
+              <ul className="pricing-features">
+                <li>Unlimited subscriptions</li>
+                <li>Advanced analytics & insights</li>
+                <li>Priority support</li>
+                <li>API access</li>
+                <li>Team collaboration</li>
+                <li>Custom reports</li>
+              </ul>
+              <button 
+                className="pricing-button" 
+                onClick={() => onNavigate('billing')}
+              >
+                Start Pro Trial
+              </button>
+            </div>
+          </div>
         </div>
       </section>
-      <footer style={{ background: bg, color: muted, textAlign: "center", padding: "2rem" }}>
-        &copy; {new Date().getFullYear()} Subtrax. All rights reserved.
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="landing-section testimonials-section">
+        <div className="content-container">
+          <h2 className="section-title">What Our Users Say</h2>
+          <div className="testimonials-container">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="testimonial-card">
+                <img 
+                  src={testimonial.avatar} 
+                  alt={testimonial.name}
+                  className="testimonial-avatar"
+                />
+                <p className="testimonial-review">"{testimonial.review}"</p>
+                <h4 className="testimonial-name">- {testimonial.name}</h4>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="landing-section faq-section">
+        <div className="content-container">
+          <h2 className="section-title">Frequently Asked Questions</h2>
+          <div className="faq-container">
+            {faqs.map((faq, index) => (
+              <div key={index} className="faq-card">
+                <h3 className="faq-question">{faq.question}</h3>
+                <p className="faq-answer">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="landing-section newsletter-section">
+        <div className="content-container">
+          <h2 className="section-title">Stay Updated</h2>
+          <p className="newsletter-description">
+            Get the latest features and Pakistani fintech news delivered to your inbox.
+          </p>
+          {!subscribed ? (
+            <form className="newsletter-form" onSubmit={handleSubscribe}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="newsletter-input"
+                required
+              />
+              <button type="submit" className="newsletter-button">
+                Subscribe
+              </button>
+            </form>
+          ) : (
+            <p className="subscription-success">
+              ✅ Thank you for subscribing! Check your email for confirmation.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="content-container">
+          <div className="footer-content">
+            <div className="footer-brand">
+              <h3 className="footer-logo">Subtrax</h3>
+              <p className="footer-description">
+                Pakistan's leading subscription management platform
+              </p>
+            </div>
+            <div className="footer-links">
+              <div className="footer-column">
+                <h4 className="footer-column-title">Product</h4>
+                <a href="#features" className="footer-link">Features</a>
+                <a href="#pricing" className="footer-link">Pricing</a>
+                <button 
+                  className="footer-link" 
+                  onClick={() => onNavigate('help')}
+                >
+                  Help Center
+                </button>
+              </div>
+              <div className="footer-column">
+                <h4 className="footer-column-title">Company</h4>
+                <button 
+                  className="footer-link" 
+                  onClick={() => onNavigate('about')}
+                >
+                  About Us
+                </button>
+                <button 
+                  className="footer-link" 
+                  onClick={() => onNavigate('privacy')}
+                >
+                  Privacy Policy
+                </button>
+                <button 
+                  className="footer-link" 
+                  onClick={() => onNavigate('terms')}
+                >
+                  Terms of Service
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <p>&copy; 2024 Subtrax. All rights reserved. Made with ❤️ in Pakistan 🇵🇰</p>
+          </div>
+        </div>
       </footer>
-      <style>{`
-        @media (max-width: 800px) {
-          nav, header, section, footer { padding: 1.5rem !important; }
-          h1 { font-size: 2.2rem !important; }
-          h2 { font-size: 1.3rem !important; }
-          ul, div { flex-direction: column !important; gap: 1rem !important; }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
-}
+};
+
+export default LandingPage;
