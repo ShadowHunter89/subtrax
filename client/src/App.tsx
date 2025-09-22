@@ -3,7 +3,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, GlobalStyles } from '@mui/material';
+import { CssBaseline, GlobalStyles, Box } from '@mui/material';
 import AuthProvider from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthComponent from './components/AuthComponent';
@@ -14,6 +14,10 @@ import TermsAndConditions from './TermsAndConditions';
 import PrivacyPolicy from './PrivacyPolicy';
 import About from './About';
 import Help from './Help';
+import Navigation from './components/Navigation';
+import ErrorBoundary from './components/ErrorBoundary';
+import ContactForm from './components/ContactForm';
+import UserSettingsPage from './components/UserSettingsPage';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -150,42 +154,80 @@ const globalStyles = (
 );
 
 const App: React.FC = () => {
+  const AppWithNavigation = () => {
+    const [currentPath, setCurrentPath] = React.useState(window.location.pathname);
+
+    const handleNavigate = (path: string) => {
+      setCurrentPath(path);
+      window.history.pushState({}, '', path);
+      window.location.href = path;
+    };
+
+    return (
+      <ErrorBoundary>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Navigation onNavigate={handleNavigate} currentPath={currentPath} />
+          <Box sx={{ flex: 1 }}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage onNavigate={handleNavigate} />} />
+              <Route path="/auth" element={<AuthComponent />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/contact" element={<ContactForm />} />
+              
+              {/* Protected Routes */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <SimpleDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/billing" 
+                element={
+                  <ProtectedRoute>
+                    <PaymentIntegration />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <UserSettingsPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/analytics" 
+                element={
+                  <ProtectedRoute>
+                    <SimpleDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Catch all route - redirect to home */}
+              <Route path="*" element={<LandingPage onNavigate={handleNavigate} />} />
+            </Routes>
+          </Box>
+        </Box>
+      </ErrorBoundary>
+    );
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {globalStyles}
       <AuthProvider>
         <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<AuthComponent />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/terms" element={<TermsAndConditions />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            
-            {/* Protected Routes */}
-            <Route 
-              path="/dashboard" 
-              element={
-                <ProtectedRoute>
-                  <SimpleDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/billing" 
-              element={
-                <ProtectedRoute>
-                  <PaymentIntegration />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Catch all route - redirect to home */}
-            <Route path="*" element={<LandingPage />} />
-          </Routes>
+          <AppWithNavigation />
         </Router>
       </AuthProvider>
     </ThemeProvider>

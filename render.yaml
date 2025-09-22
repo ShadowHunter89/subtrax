@@ -1,25 +1,58 @@
 services:
-  # Static Site for the client
-  - type: web
-    name: subtrax-client
-    runtime: static
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: client/build
-
-  # Web Service for the server (API)
+  # Backend API Service
   - type: web
     name: subtrax-server
     runtime: node
+    plan: starter
     buildCommand: cd server && npm install
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: FIREBASE_PROJECT_ID
-        sync: false
+        value: subtrax-4964f
       - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
         sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: REDIS_URL
         sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+    autoDeploy: true
+  
+  # React Frontend Service  
+  - type: web
+    name: subtrax-frontend
+    runtime: node
+    plan: starter
+    buildCommand: cd client && npm install && npm run build && npm install -g serve
+    startCommand: cd client && serve -s build -l 10000
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REACT_APP_FIREBASE_API_KEY
+        sync: false
+      - key: REACT_APP_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: REACT_APP_FIREBASE_PROJECT_ID
+        sync: false
+      - key: REACT_APP_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: REACT_APP_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: REACT_APP_FIREBASE_APP_ID
+        sync: false
+      - key: REACT_APP_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: REACT_APP_API_URL
+        value: https://subtrax-server.onrender.com
+    autoDeploy: true

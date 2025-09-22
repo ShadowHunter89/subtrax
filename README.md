@@ -1,4 +1,19 @@
-# Subtrax - Subscription Optimizer
+# Subtrax - Pakistani Subscription Management Platform
+
+## Recent Updates ✨
+
+### Code Quality Improvements (September 2025)
+- **✅ Fixed React Components**: Migrated all components from inline styles to CSS classes for better maintainability
+- **✅ Enhanced TypeScript**: Added proper interfaces and type safety across all components
+- **✅ Improved Accessibility**: Added ARIA labels and semantic HTML throughout the application
+- **✅ Updated CI/CD**: Fixed GitHub Actions workflows for proper deployment
+- **✅ Deployment Ready**: Updated render.yaml and deployment configurations
+
+### Component Updates
+- `LandingPage.tsx` - Complete rewrite with clean CSS architecture
+- `About.tsx`, `Help.tsx`, `CheckoutButtons.tsx` - Style migration completed
+- `PrivacyPolicy.tsx`, `TermsAndConditions.tsx` - Consistent styling applied
+- `styles.css` - Comprehensive design system implementation
 
 ## Firebase Service Account Setup
 

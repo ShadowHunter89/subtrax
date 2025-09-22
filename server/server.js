@@ -59,6 +59,25 @@ app.use('/api/payments', paymentsRouter);
 const billingRouter = require('./billingRouter');
 app.use('/api/billing', billingRouter);
 
+// New API routes
+const subscriptionsRouter = require('./routes/subscriptions');
+app.use('/api/subscriptions', subscriptionsRouter);
+
+const usersRouter = require('./routes/users');
+app.use('/api/users', usersRouter);
+
+const aiRouter = require('./routes/ai');
+app.use('/api/ai', aiRouter);
+
+const contactRouter = require('./routes/contact');
+app.use('/api/contact', contactRouter);
+
+const analyticsRouter = require('./routes/analytics');
+app.use('/api/analytics', analyticsRouter);
+
+const errorsRouter = require('./routes/errors');
+app.use('/api/errors', errorsRouter);
+
 // Homepage route
 app.get('/', (req, res) => {
   res.send(`

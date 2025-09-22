@@ -59,5 +59,18 @@ router.patch('/entry/:id', adminAuth, async (req, res) => {
   }
 });
 
+// Admin: update a billing entry by id (PUT method for frontend compatibility)
+router.put('/entry/:id', adminAuth, async (req, res) => {
+  const id = req.params.id;
+  const updates = req.body || {};
+  try {
+    const updated = await updateEntry(id, updates);
+    res.json({ ok: true, updated });
+  } catch (err) {
+    if (err.message === 'not found') return res.status(404).json({ ok: false, error: 'not found' });
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 module.exports = router;
 
