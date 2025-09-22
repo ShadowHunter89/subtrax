@@ -28,7 +28,6 @@ import {
   Help as HelpIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountIcon,
-  Notifications as NotificationsIcon,
   Search as SearchIcon,
   Home as HomeIcon,
   Info as AboutIcon
@@ -152,7 +151,7 @@ const Navigation: React.FC<NavigationProps> = ({ onNavigate, currentPath = '/' }
             <>
               <IconButton onClick={handleProfileMenuOpen} sx={{ p: 0 }}>
                 <Avatar
-                  src={userProfile?.photoURL}
+                  src={(userProfile as any)?.photoURL || undefined}
                   sx={{ width: 40, height: 40 }}
                 >
                   {userProfile?.displayName?.charAt(0).toUpperCase() || 'U'}
@@ -282,7 +281,7 @@ const Navigation: React.FC<NavigationProps> = ({ onNavigate, currentPath = '/' }
           {currentUser && (
             <Box sx={{ mt: 2, p: 2, backgroundColor: 'action.hover', borderRadius: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar src={userProfile?.photoURL}>
+                <Avatar src={(userProfile as any)?.photoURL || undefined}>
                   {userProfile?.displayName?.charAt(0).toUpperCase() || 'U'}
                 </Avatar>
                 <Box>
@@ -305,13 +304,18 @@ const Navigation: React.FC<NavigationProps> = ({ onNavigate, currentPath = '/' }
             .filter(item => item.public || currentUser)
             .map((item) => (
               <ListItem
-                button
                 key={item.path}
                 onClick={() => {
                   onNavigate(item.path);
                   setMobileDrawerOpen(false);
                 }}
-                selected={currentPath === item.path}
+                sx={{
+                  cursor: 'pointer',
+                  backgroundColor: currentPath === item.path ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover'
+                  }
+                }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.label} />
@@ -321,11 +325,17 @@ const Navigation: React.FC<NavigationProps> = ({ onNavigate, currentPath = '/' }
           {currentUser && (
             <>
               <Divider />
-              <ListItem button onClick={() => { onNavigate('/settings'); setMobileDrawerOpen(false); }}>
+              <ListItem 
+                onClick={() => { onNavigate('/settings'); setMobileDrawerOpen(false); }}
+                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              >
                 <ListItemIcon><SettingsIcon /></ListItemIcon>
                 <ListItemText primary="Settings" />
               </ListItem>
-              <ListItem button onClick={handleLogout}>
+              <ListItem 
+                onClick={handleLogout}
+                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              >
                 <ListItemIcon><LogoutIcon /></ListItemIcon>
                 <ListItemText primary="Sign Out" />
               </ListItem>
@@ -335,7 +345,10 @@ const Navigation: React.FC<NavigationProps> = ({ onNavigate, currentPath = '/' }
           {!currentUser && (
             <>
               <Divider />
-              <ListItem button onClick={() => { onNavigate('/auth'); setMobileDrawerOpen(false); }}>
+              <ListItem 
+                onClick={() => { onNavigate('/auth'); setMobileDrawerOpen(false); }}
+                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              >
                 <ListItemIcon><AccountIcon /></ListItemIcon>
                 <ListItemText primary="Sign In" />
               </ListItem>

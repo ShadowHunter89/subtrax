@@ -5,7 +5,6 @@ import {
   Paper,
   Grid,
   Card,
-  CardContent,
   Switch,
   FormControlLabel,
   FormControl,
@@ -36,14 +35,10 @@ import {
   Notifications as NotificationsIcon,
   Security as SecurityIcon,
   Palette as ThemeIcon,
-  Language as LanguageIcon,
   AccountCircle as AccountIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon,
   Save as SaveIcon,
   Camera as CameraIcon,
-  Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
   Download as ExportIcon,
   CloudDownload as BackupIcon
 } from '@mui/icons-material';
@@ -136,7 +131,6 @@ const UserSettingsPage: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const currencies = [
@@ -278,7 +272,7 @@ const UserSettingsPage: React.FC = () => {
                   >
                     <Avatar
                       sx={{ width: 100, height: 100, mx: 'auto', mb: 2 }}
-                      src={userProfile?.photoURL}
+                      src={(userProfile as any)?.photoURL || undefined}
                     >
                       {settings.account.displayName.charAt(0).toUpperCase()}
                     </Avatar>

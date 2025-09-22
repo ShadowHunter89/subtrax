@@ -169,9 +169,9 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ onNavigate, onClose }) => {
             {results.map((result, index) => (
               <React.Fragment key={result.id}>
                 <ListItem
-                  button
                   onClick={() => handleResultClick(result)}
                   sx={{
+                    cursor: 'pointer',
                     '&:hover': {
                       backgroundColor: 'action.hover'
                     }
