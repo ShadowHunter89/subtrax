@@ -8,8 +8,10 @@ import AuthProvider from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthComponent from './components/AuthComponent';
 import SimpleDashboard from './components/SimpleDashboard';
+import EnhancedDashboard from './components/EnhancedDashboard';
 import PaymentIntegration from './components/PaymentIntegration';
 import LandingPage from './LandingPage';
+import ModernLandingPage from './components/ModernLandingPage';
 import TermsAndConditions from './TermsAndConditions';
 import PrivacyPolicy from './PrivacyPolicy';
 import About from './About';
@@ -170,7 +172,7 @@ const App: React.FC = () => {
           <Box sx={{ flex: 1 }}>
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<LandingPage onNavigate={handleNavigate} />} />
+              <Route path="/" element={<ModernLandingPage />} />
               <Route path="/auth" element={<AuthComponent />} />
               <Route path="/about" element={<About />} />
               <Route path="/help" element={<Help />} />
@@ -183,7 +185,7 @@ const App: React.FC = () => {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <SimpleDashboard />
+                    <EnhancedDashboard />
                   </ProtectedRoute>
                 } 
               />
