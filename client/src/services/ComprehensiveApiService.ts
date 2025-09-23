@@ -29,6 +29,7 @@ const API_KEYS = {
   SENDGRID_KEY: process.env.REACT_APP_SENDGRID_KEY,
   MAILGUN_KEY: process.env.REACT_APP_MAILGUN_KEY,
   TWILIO_SID: process.env.REACT_APP_TWILIO_SID,
+  TWILIO_AUTH_TOKEN: process.env.REACT_APP_TWILIO_AUTH_TOKEN,
   
   // Analytics APIs
   GOOGLE_ANALYTICS_ID: process.env.REACT_APP_GOOGLE_ANALYTICS_ID,
@@ -287,7 +288,7 @@ export const TwilioAPI = {
     const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${API_KEYS.TWILIO_SID}/Messages.json`, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${API_KEYS.TWILIO_SID}:your_auth_token`)}`,
+        'Authorization': `Basic ${btoa(`${API_KEYS.TWILIO_SID}:${API_KEYS.TWILIO_AUTH_TOKEN}`)}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: formData,

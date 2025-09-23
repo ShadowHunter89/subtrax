@@ -29,7 +29,7 @@ NODE_ENV=production
 FIREBASE_PROJECT_ID=subtrax-4964f
 FIREBASE_SERVICE_ACCOUNT_BASE64=ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIs...
 REDIS_URL=redis://default:Q3LnJVTN0khzZEy5F6PUX480SbJo12Ne@redis-11640.c265.us-east-1-2.ec2.redns.redis-cloud.com:11640
-GEMINI_API_KEY=AIzaSyC9mSnswX15zbh-HmgVRaLSxUpMBZ1WtQg
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # Optional (add when you get them):
 OPENAI_API_KEY=sk-your-openai-key

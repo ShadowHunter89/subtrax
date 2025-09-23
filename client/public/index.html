@@ -3,6 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com https://api.paypal.com https://api.exchangerate-api.com https://api.fixer.io https://*.googleapis.com https://api.twilio.com https://api.sendgrid.com https://api.mixpanel.com; frame-src https://js.stripe.com https://www.paypal.com;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Subtrax - Subscription Optimizer</title>
     <meta name="description" content="Optimize, manage, and save on your subscriptions with Subtrax." />
     <link rel="icon" href="favicon.ico" />

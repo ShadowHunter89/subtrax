@@ -1,6 +1,6 @@
 
 // Modern App component with comprehensive routing and authentication
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, GlobalStyles, Box } from '@mui/material';
@@ -22,6 +22,7 @@ import NotificationSystem from './components/NotificationSystem';
 import CurrencyConverter from './components/CurrencyConverter';
 import SubscriptionAnalytics from './components/SubscriptionAnalytics';
 import ApiTestingDashboard from './components/ApiTestingDashboard';
+import { validateEnvironment } from './utils/envValidator';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -158,6 +159,15 @@ const globalStyles = (
 );
 
 const App: React.FC = () => {
+  // Validate environment variables on app start
+  useEffect(() => {
+    const { isValid } = validateEnvironment();
+    if (!isValid && process.env.NODE_ENV === 'development') {
+      // In development, we want to know about missing env vars
+      // In production, the app should handle missing optional vars gracefully
+    }
+  }, []);
+
   const AppWithNavigation = () => {
     const [currentPath, setCurrentPath] = React.useState(window.location.pathname);
 

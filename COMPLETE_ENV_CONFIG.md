@@ -34,7 +34,7 @@ REDIS_URL=redis://default:Q3LnJVTN0khzZEy5F6PUX480SbJo12Ne@redis-11640.c265.us-e
 # ============================
 
 # Google Gemini API Key (CONFIGURED & READY ✅)
-GEMINI_API_KEY=AIzaSyC9mSnswX15zbh-HmgVRaLSxUpMBZ1WtQg
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # OpenAI API Key (Alternative - add if needed)
 OPENAI_API_KEY=sk_your_openai_api_key_here
