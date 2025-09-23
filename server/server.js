@@ -7,6 +7,39 @@ const { init: initSentry } = require('./lib/sentry');
 // Load environment variables
 dotenv.config();
 
+// --- Startup masked env check (non-sensitive presence only) ---
+function maskPresent(key) {
+  try {
+    return !!process.env[key];
+  } catch (e) {
+    return false;
+  }
+}
+
+const requiredCheckKeys = [
+  'FIREBASE_SERVICE_ACCOUNT_BASE64',
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_PRIVATE_KEY',
+  'REDIS_URL',
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'OPENAI_API_KEY',
+  'GEMINI_API_KEY',
+  'REACT_APP_API_URL',
+  'ADMIN_API_KEY'
+];
+
+// Log presence (NOT values) so we can confirm Render passed secrets
+try {
+  const presence = {};
+  requiredCheckKeys.forEach(k => { presence[k] = maskPresent(k); });
+  // eslint-disable-next-line no-console
+  console.info('Environment presence:', JSON.stringify(presence));
+} catch (e) {
+  // ignore logging errors
+}
+
 // Initialize Sentry if configured
 initSentry();
 
@@ -112,6 +145,32 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     firebase: !!db,
     openai_model: process.env.OPENAI_MODEL || 'not-set'
+  });
+});
+
+// Debug endpoint: reports presence of important env vars and firebase status (DOES NOT RETURN SECRET VALUES)
+app.get('/api/debug/env', (req, res) => {
+  const keys = [
+    'FIREBASE_SERVICE_ACCOUNT_BASE64',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_CLIENT_EMAIL',
+    'FIREBASE_PRIVATE_KEY',
+    'REDIS_URL',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'OPENAI_API_KEY',
+    'GEMINI_API_KEY',
+    'REACT_APP_API_URL',
+    'ADMIN_API_KEY'
+  ];
+
+  const presence = {};
+  keys.forEach(k => { presence[k] = !!process.env[k]; });
+
+  res.json({
+    success: true,
+    firebaseInitialized: !!db,
+    envPresence: presence
   });
 });
 
