@@ -4,10 +4,10 @@
 const Redis = require('ioredis');
 
 async function quickTest() {
-    // REPLACE THIS URL with your Redis URL from ri.redis.io
-    const YOUR_REDIS_URL = 'redis://default:your_password@redis-13581751.c1.region.ec2.cloud.redislabs.com:13581';
+    // Your Redis Cloud URL
+    const YOUR_REDIS_URL = 'redis://default:Q3LnJVTN0khzZEy5F6PUX480SbJo12Ne@redis-11640.c265.us-east-1-2.ec2.redns.redis-cloud.com:11640';
     
-    console.log('🔍 Testing Redis URL from ri.redis.io...');
+    console.log('🔍 Testing Redis Cloud connection...');
     console.log(`🔗 URL: ${YOUR_REDIS_URL.replace(/:[^:@]*@/, ':***@')}`);
     
     try {
@@ -37,8 +37,8 @@ async function quickTest() {
     }
 }
 
-// Uncomment and run this to test
-// quickTest();
+// Test your Redis connection
+quickTest();
 
 console.log('📝 To test your Redis URL:');
 console.log('1. Replace YOUR_REDIS_URL with your actual URL');

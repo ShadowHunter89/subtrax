@@ -6,8 +6,8 @@ const Redis = require('ioredis');
 async function testRedisConnection() {
     console.log('🔍 Testing Redis Connection for Subtrax...\n');
     
-    // Get Redis URL from environment or prompt user
-    const redisUrl = process.env.REDIS_URL;
+    // Get Redis URL from environment or use the configured Redis Cloud URL
+    const redisUrl = process.env.REDIS_URL || 'redis://default:Q3LnJVTN0khzZEy5F6PUX480SbJo12Ne@redis-11640.c265.us-east-1-2.ec2.redns.redis-cloud.com:11640';
     
     if (!redisUrl) {
         console.log('❌ REDIS_URL not found in environment variables');
