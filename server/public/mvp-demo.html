@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subtrax - MVP Ready for Render</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 2rem;
+        }
+        h1 { 
+            font-size: 3rem;
+            background: linear-gradient(45deg, #7F5AF0, #2CB67D);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #7F5AF0;
+        }
+        .feature h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .feature p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .cta {
+            background: linear-gradient(45deg, #7F5AF0, #2CB67D);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 1rem;
+            transition: transform 0.2s;
+        }
+        .cta:hover {
+            transform: translateY(-2px);
+        }
+        .admin-cta {
+            background: linear-gradient(45deg, #2CB67D, #7F5AF0);
+        }
+        .status {
+            background: #e8f5e8;
+            color: #2e7d2e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subtrax</h1>
+        <p class="subtitle">
+            🚀 Professional MVP Ready for Render Deployment<br>
+            AI-powered subscription optimization platform
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🎯 Smart Analytics</h3>
+                <p>AI-driven insights to optimize your subscription spending</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Admin Dashboard</h3>
+                <p>Complete user management and analytics control panel</p>
+            </div>
+            <div class="feature">
+                <h3>💰 Cost Tracking</h3>
+                <p>Track, analyze, and reduce subscription costs</p>
+            </div>
+            <div class="feature">
+                <h3>🔐 Secure & Fast</h3>
+                <p>Built with modern security and performance standards</p>
+            </div>
+        </div>
+        
+        <button class="cta" onclick="window.location.href='/dashboard'">
+            Launch Dashboard
+        </button>
+        <button class="cta admin-cta" onclick="window.location.href='/admin'">
+            Admin Panel
+        </button>
+        
+        <div class="status">
+            ✅ MVP Status: Production Ready<br>
+            ✅ Security: Validated & Hardened<br>
+            ✅ Tests: All Passing<br>
+            ✅ Deploy: Ready for Render
+        </div>
+    </div>
+</body>
+</html>

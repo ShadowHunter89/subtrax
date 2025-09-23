@@ -10,7 +10,6 @@ import AuthComponent from './components/AuthComponent';
 import SimpleDashboard from './components/SimpleDashboard';
 import EnhancedDashboard from './components/EnhancedDashboard';
 import PaymentIntegration from './components/PaymentIntegration';
-import LandingPage from './LandingPage';
 import ModernLandingPage from './components/ModernLandingPage';
 import TermsAndConditions from './TermsAndConditions';
 import PrivacyPolicy from './PrivacyPolicy';
@@ -215,7 +214,7 @@ const App: React.FC = () => {
               />
               
               {/* Catch all route - redirect to home */}
-              <Route path="*" element={<LandingPage onNavigate={handleNavigate} />} />
+              <Route path="*" element={<ModernLandingPage />} />
             </Routes>
           </Box>
         </Box>

@@ -50,6 +50,18 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve React static files
+const path = require('path');
+console.log('Setting up static file serving from:', path.join(__dirname, 'public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Add test route
+app.get('/test', (req, res) => {
+  console.log('Test route hit');
+  res.json({ message: 'Server is working', timestamp: new Date().toISOString() });
+});
+
 // Stripe webhook needs raw body, mount its router after express.json if necessary
 const stripeRouter = require('./stripe');
 app.use('/api/stripe', stripeRouter);
@@ -163,12 +175,18 @@ app.post('/api/optimize', async (req, res) => {
   }
 });
 
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Export app for testing and only start server if run directly
 module.exports = app;
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  const HOST = process.env.HOST || '0.0.0.0';
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
   });
 }

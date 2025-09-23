@@ -166,7 +166,7 @@ const ModernLandingPage: React.FC = () => {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Take Control of Your Subscriptions
+            🚀 Take Control of Your Subscriptions
           </Typography>
           <Typography variant="h5" sx={{ 
             color: 'text.secondary', 

@@ -8,13 +8,19 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: FIREBASE_PROJECT_ID
+        value: subtrax-4964f
+      - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
       - key: STRIPE_SECRET_KEY
-        value: your_stripe_secret_key
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
       - key: FRONTEND_URL
-        value: https://your-netlify-site.netlify.app
-      - key: FIREBASE_STORAGE_BUCKET
-        value: subtrax.appspot.com
-      - key: PLAID_CLIENT_ID
-        value: your_plaid_client_id
-      - key: PLAID_SECRET
-        value: your_plaid_secret
+        value: https://client-q85pl98vr-shadowhunter89s-projects.vercel.app

@@ -1,8 +1,7 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import LovableDashboard from './components/LovableDashboard.tsx';
+import ModernLandingPage from './components/ModernLandingPage';
 
 const theme = createTheme({
   palette: {
@@ -18,12 +17,12 @@ const theme = createTheme({
       dark: '#1F9A65',
     },
     background: {
-      default: '#F8F9FA',
+      default: '#FFFFFE',
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#1A1A1A',
-      secondary: '#6B7280',
+      primary: '#242629',
+      secondary: '#94A1B2',
     },
   },
   typography: {
@@ -47,24 +46,15 @@ const theme = createTheme({
       fontWeight: 700,
       lineHeight: 1.3,
     },
-    h4: {
-      fontWeight: 700,
-    },
-    h6: {
-      fontWeight: 600,
-    },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           textTransform: 'none',
           fontWeight: 600,
-          boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 4px 12px rgba(127, 90, 240, 0.25)',
-          },
+          padding: '12px 32px',
         },
       },
     },
@@ -72,28 +62,20 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-          border: '1px solid #E5E7EB',
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
+          boxShadow: '0 8px 32px rgba(127, 90, 240, 0.15)',
         },
       },
     },
   },
 });
 
-const App = () => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <LovableDashboard />
-  </ThemeProvider>
-);
+const App: React.FC = () => {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <ModernLandingPage />
+    </ThemeProvider>
+  );
+};
 
-const container = document.getElementById('root');
-const root = createRoot(container!);
-root.render(<App />);
+export default App;
