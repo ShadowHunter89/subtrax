@@ -7,7 +7,6 @@ import { CssBaseline, GlobalStyles, Box } from '@mui/material';
 import AuthProvider from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthComponent from './components/AuthComponent';
-import SimpleDashboard from './components/SimpleDashboard';
 import EnhancedDashboard from './components/EnhancedDashboard';
 import PaymentIntegration from './components/PaymentIntegration';
 import ModernLandingPage from './components/ModernLandingPage';
@@ -19,6 +18,10 @@ import Navigation from './components/Navigation';
 import ErrorBoundary from './components/ErrorBoundary';
 import ContactForm from './components/ContactForm';
 import UserSettingsPage from './components/UserSettingsPage';
+import NotificationSystem from './components/NotificationSystem';
+import CurrencyConverter from './components/CurrencyConverter';
+import SubscriptionAnalytics from './components/SubscriptionAnalytics';
+import ApiTestingDashboard from './components/ApiTestingDashboard';
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -168,6 +171,11 @@ const App: React.FC = () => {
       <ErrorBoundary>
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Navigation onNavigate={handleNavigate} currentPath={currentPath} />
+          <NotificationSystem 
+            enableEmailNotifications={true}
+            enableSmsNotifications={false}
+            emailAddress="user@example.com"
+          />
           <Box sx={{ flex: 1 }}>
             <Routes>
               {/* Public Routes */}
@@ -208,7 +216,23 @@ const App: React.FC = () => {
                 path="/analytics" 
                 element={
                   <ProtectedRoute>
-                    <SimpleDashboard />
+                    <SubscriptionAnalytics />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/currency" 
+                element={
+                  <ProtectedRoute>
+                    <CurrencyConverter />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/api-testing" 
+                element={
+                  <ProtectedRoute>
+                    <ApiTestingDashboard />
                   </ProtectedRoute>
                 } 
               />

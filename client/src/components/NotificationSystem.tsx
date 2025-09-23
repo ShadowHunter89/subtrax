@@ -14,7 +14,8 @@ import {
   Badge,
   IconButton,
   Chip,
-  Divider
+  Divider,
+  Tooltip
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -24,30 +25,173 @@ import {
   Info as InfoIcon,
   CheckCircle as CheckCircleIcon,
   Clear as ClearIcon,
-  MarkEmailRead as MarkReadIcon
+  MarkEmailRead as MarkReadIcon,
+  Email,
+  Sms,
+  Payment,
+  Analytics,
+  CurrencyExchange
 } from '@mui/icons-material';
+import { GoogleAnalyticsAPI, SendGridAPI, TwilioAPI } from '../services/ComprehensiveApiService';
 
 interface Notification {
   id: string;
-  type: 'renewal' | 'savings' | 'warning' | 'info' | 'success';
+  type: 'renewal' | 'savings' | 'warning' | 'info' | 'success' | 'payment' | 'subscription' | 'analytics' | 'currency';
   title: string;
   message: string;
   createdAt: Date;
   read: boolean;
   actionUrl?: string;
   actionText?: string;
+  severity?: 'success' | 'error' | 'warning' | 'info';
+  actions?: Array<{
+    label: string;
+    action: () => void;
+  }>;
 }
 
 interface NotificationSystemProps {
   userId?: string;
+  enableEmailNotifications?: boolean;
+  enableSmsNotifications?: boolean;
+  phoneNumber?: string;
+  emailAddress?: string;
 }
 
-const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
+const NotificationSystem: React.FC<NotificationSystemProps> = ({ 
+  userId,
+  enableEmailNotifications = false,
+  enableSmsNotifications = false,
+  phoneNumber,
+  emailAddress
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
+
+  // Add notification function
+  const addNotification = (notification: Omit<Notification, 'id' | 'createdAt'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Date.now().toString(),
+      createdAt: new Date(),
+    };
+
+    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]); // Keep only 10 notifications
+    setUnreadCount(prev => prev + 1);
+    setCurrentNotification(newNotification);
+    setSnackbarOpen(true);
+
+    // Track notification
+    GoogleAnalyticsAPI.trackEvent('notification_shown', {
+      type: notification.type,
+      severity: notification.severity || 'info',
+      user_id: userId,
+    });
+
+    // Send external notifications if enabled
+    if (enableEmailNotifications && emailAddress) {
+      sendEmailNotification(newNotification);
+    }
+
+    if (enableSmsNotifications && phoneNumber) {
+      sendSmsNotification(newNotification);
+    }
+  };
+
+  // Send email notification
+  const sendEmailNotification = async (notification: Notification) => {
+    try {
+      await SendGridAPI.sendEmail(
+        emailAddress!,
+        `Subtrax Notification: ${notification.title}`,
+        `
+          <h2>${notification.title}</h2>
+          <p>${notification.message}</p>
+          <p><strong>Time:</strong> ${notification.createdAt.toLocaleString()}</p>
+          <p><strong>Type:</strong> ${notification.type}</p>
+        `
+      );
+    } catch (error) {
+      // Silent fail for demo
+    }
+  };
+
+  // Send SMS notification
+  const sendSmsNotification = async (notification: Notification) => {
+    try {
+      await TwilioAPI.sendSMS(
+        phoneNumber!,
+        `Subtrax: ${notification.title} - ${notification.message}`
+      );
+    } catch (error) {
+      // Silent fail for demo
+    }
+  };
+
+  // Notification helper functions
+  const notifyPaymentSuccess = (amount: number, currency: string, provider: string) => {
+    addNotification({
+      type: 'payment',
+      title: 'Payment Successful',
+      message: `Payment of ${currency} ${amount} via ${provider} completed successfully.`,
+      severity: 'success',
+      read: false,
+    });
+  };
+
+  const notifyPaymentFailure = (amount: number, currency: string, provider: string, error: string) => {
+    addNotification({
+      type: 'payment',
+      title: 'Payment Failed',
+      message: `Payment of ${currency} ${amount} via ${provider} failed: ${error}`,
+      severity: 'error',
+      read: false,
+    });
+  };
+
+  const notifySubscriptionExpiring = (subscriptionName: string, daysLeft: number) => {
+    addNotification({
+      type: 'subscription',
+      title: 'Subscription Expiring Soon',
+      message: `Your ${subscriptionName} subscription expires in ${daysLeft} days.`,
+      severity: 'warning',
+      read: false,
+    });
+  };
+
+  const notifySubscriptionRenewed = (subscriptionName: string) => {
+    addNotification({
+      type: 'subscription',
+      title: 'Subscription Renewed',
+      message: `Your ${subscriptionName} subscription has been successfully renewed.`,
+      severity: 'success',
+      read: false,
+    });
+  };
+
+  const notifyCurrencyExchange = (fromCurrency: string, toCurrency: string, rate: number) => {
+    addNotification({
+      type: 'currency',
+      title: 'Currency Exchange Update',
+      message: `Current rate: 1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency}`,
+      severity: 'info',
+      read: false,
+    });
+  };
+
+  const notifyAnalyticsInsight = (insight: string) => {
+    addNotification({
+      type: 'analytics',
+      title: 'Analytics Insight',
+      message: insight,
+      severity: 'info',
+      read: false,
+    });
+  };
 
   // Generate sample notifications (in real app, this would come from API)
   useEffect(() => {
@@ -81,30 +225,31 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
         read: true,
         actionUrl: '/subscriptions',
         actionText: 'Review'
-      },
-      {
-        id: '4',
-        type: 'info',
-        title: 'New Feature Available',
-        message: 'AI recommendations are now available for all users',
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-        read: true,
-        actionUrl: '/ai',
-        actionText: 'Try Now'
-      },
-      {
-        id: '5',
-        type: 'success',
-        title: 'Subscription Cancelled Successfully',
-        message: 'Your Hulu subscription has been cancelled and you\'ll save $12.99/month',
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-        read: true
       }
     ];
 
     setNotifications(sampleNotifications);
     setUnreadCount(sampleNotifications.filter(n => !n.read).length);
   }, [userId]);
+
+  // Expose notification methods globally
+  useEffect(() => {
+    // @ts-ignore
+    window.SubtraxNotifications = {
+      notifyPaymentSuccess,
+      notifyPaymentFailure,
+      notifySubscriptionExpiring,
+      notifySubscriptionRenewed,
+      notifyCurrencyExchange,
+      notifyAnalyticsInsight,
+      addNotification,
+    };
+
+    return () => {
+      // @ts-ignore
+      delete window.SubtraxNotifications;
+    };
+  }, []);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -113,6 +258,9 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
       case 'warning': return <WarningIcon color="warning" />;
       case 'info': return <InfoIcon color="info" />;
       case 'success': return <CheckCircleIcon color="success" />;
+      case 'payment': return <Payment color="primary" />;
+      case 'analytics': return <Analytics color="secondary" />;
+      case 'currency': return <CurrencyExchange color="info" />;
       default: return <NotificationsIcon />;
     }
   };
@@ -124,13 +272,15 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
       case 'warning': return 'warning';
       case 'info': return 'info';
       case 'success': return 'success';
+      case 'payment': return 'primary';
+      case 'analytics': return 'secondary';
+      case 'currency': return 'info';
       default: return 'default';
     }
   };
 
   const markAsRead = async (notificationId: string) => {
     try {
-      // In real app, make API call to mark as read
       setNotifications(prev => 
         prev.map(n => 
           n.id === notificationId ? { ...n, read: true } : n
@@ -138,36 +288,37 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
       setSnackbarMessage('Notification marked as read');
+      setCurrentNotification(null);
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      // Silent fail for demo
     }
   };
 
   const markAllAsRead = async () => {
     try {
-      // In real app, make API call to mark all as read
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
       setSnackbarMessage('All notifications marked as read');
+      setCurrentNotification(null);
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      // Silent fail for demo
     }
   };
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      // In real app, make API call to delete notification
       const notificationToDelete = notifications.find(n => n.id === notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       if (notificationToDelete && !notificationToDelete.read) {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
       setSnackbarMessage('Notification deleted');
+      setCurrentNotification(null);
       setSnackbarOpen(true);
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      // Silent fail for demo
     }
   };
 
@@ -277,7 +428,6 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
                                 size="small" 
                                 sx={{ ml: 1, mt: 0.5 }}
                                 onClick={() => {
-                                  // Navigate to action URL
                                   window.location.href = notification.actionUrl!;
                                 }}
                               >
@@ -314,18 +464,93 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({ userId }) => {
         )}
       </Box>
 
+      {/* Current Notification Snackbar */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={() => setSnackbarOpen(false)} severity="success">
-          {snackbarMessage}
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={currentNotification?.severity || 'success'}
+          variant="filled"
+        >
+          <Typography variant="subtitle2">
+            {currentNotification?.title || snackbarMessage}
+          </Typography>
+          {currentNotification?.message && (
+            <Typography variant="body2">
+              {currentNotification.message}
+            </Typography>
+          )}
         </Alert>
       </Snackbar>
+
+      {/* Notification Settings Info */}
+      <Box sx={{ position: 'fixed', bottom: 20, right: 20, zIndex: 1000 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {enableEmailNotifications && emailAddress && (
+            <Tooltip title="Email notifications enabled">
+              <Chip icon={<Email />} label="Email" size="small" color="primary" />
+            </Tooltip>
+          )}
+          {enableSmsNotifications && phoneNumber && (
+            <Tooltip title="SMS notifications enabled">
+              <Chip icon={<Sms />} label="SMS" size="small" color="secondary" />
+            </Tooltip>
+          )}
+        </Box>
+      </Box>
     </>
   );
 };
 
 export default NotificationSystem;
+
+// Export notification helper functions for external use
+export const NotificationHelpers = {
+  notifyPaymentSuccess: (amount: number, currency: string, provider: string) => {
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifyPaymentSuccess(amount, currency, provider);
+    }
+  },
+  notifyPaymentFailure: (amount: number, currency: string, provider: string, error: string) => {
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifyPaymentFailure(amount, currency, provider, error);
+    }
+  },
+  notifySubscriptionExpiring: (subscriptionName: string, daysLeft: number) => {
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifySubscriptionExpiring(subscriptionName, daysLeft);
+    }
+  },
+  notifySubscriptionRenewed: (subscriptionName: string) => {
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifySubscriptionRenewed(subscriptionName);
+    }
+  },
+  notifyCurrencyExchange: (fromCurrency: string, toCurrency: string, rate: number) => {
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifyCurrencyExchange(fromCurrency, toCurrency, rate);
+    }
+  },
+  notifyAnalyticsInsight: (insight: string) => {
+    // @ts-ignore
+    // @ts-ignore
+    if (window.SubtraxNotifications) {
+      // @ts-ignore
+      window.SubtraxNotifications.notifyAnalyticsInsight(insight);
+    }
+  },
+};

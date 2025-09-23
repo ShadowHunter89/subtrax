@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import LovableDashboard from './components/LovableDashboard.tsx';
+import { AuthProvider } from './contexts/AuthContext.tsx';
 
 const theme = createTheme({
   palette: {
@@ -88,10 +89,12 @@ const theme = createTheme({
 });
 
 const App = () => (
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <LovableDashboard />
-  </ThemeProvider>
+  <AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <LovableDashboard />
+    </ThemeProvider>
+  </AuthProvider>
 );
 
 const container = document.getElementById('root');

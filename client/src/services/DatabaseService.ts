@@ -16,7 +16,7 @@ import {
   onSnapshot,
   writeBatch
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../firebase.ts';
 
 // Database Schemas
 export interface User {

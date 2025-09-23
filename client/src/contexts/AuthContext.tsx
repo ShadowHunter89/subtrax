@@ -12,8 +12,8 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { Timestamp } from 'firebase/firestore';
-import { auth } from '../firebase';
-import DatabaseService, { User as DBUser, UserPreferences } from '../services/DatabaseService';
+import { auth } from '../firebase.ts';
+import DatabaseService, { User as DBUser, UserPreferences } from '../services/DatabaseService.ts';
 
 interface AuthContextType {
   currentUser: User | null;

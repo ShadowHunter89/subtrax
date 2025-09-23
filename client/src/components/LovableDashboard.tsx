@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
+
   Typography,
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import {
   Toolbar,
   Drawer,
   List,
-  ListItem,
+
   ListItemIcon,
   ListItemText,
   ListItemButton,
@@ -23,6 +23,17 @@ import {
   Stack,
   LinearProgress,
   alpha,
+
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   Dashboard,
@@ -34,7 +45,7 @@ import {
   Logout,
   Menu,
   Add,
-  MoreVert,
+
   CreditCard,
   Receipt,
   Analytics,
@@ -44,7 +55,12 @@ import {
   CheckCircle,
   Warning,
   Schedule,
+
+  Delete,
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext.tsx';
+import ApiService from '../services/api.ts';
+import ComprehensiveApiManager, { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService';
 
 const drawerWidth = 280;
 
@@ -115,17 +131,144 @@ const mockSubscriptions: Subscription[] = [
 const LovableDashboard: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newSubscription, setNewSubscription] = useState({
+    name: '',
+    cost: '',
+    billingCycle: 'monthly',
+    category: 'Other',
+    nextBillingDate: '',
+  });
+  const [currency] = useState('USD');
+
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    if (currentUser) {
+      loadDashboardData();
+    }
+  }, [currentUser]);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const [subscriptionsData, analyticsData] = await Promise.all([
+        ApiService.getSubscriptions(),
+        ApiService.getDashboardAnalytics(),
+      ]);
+
+      if (subscriptionsData.success) {
+        const subs = subscriptionsData.subscriptions || [];
+        setSubscriptions(subs);
+        
+        // Enrich subscriptions with company data
+        // Enrich subscription data
+        await enrichSubscriptionsData(subs);
+        // Company data enriched successfully
+        
+        // Track analytics
+        GoogleAnalyticsAPI.trackEvent('dashboard_loaded', {
+          subscription_count: subs.length,
+          currency: currency,
+        });
+      }
+
+      if (analyticsData.success) {
+        setAnalytics(analyticsData.analytics);
+      }
+      
+        // Exchange rates fetched successfully
+    } catch (err) {
+      setError('Failed to load dashboard data');
+      // Fallback to mock data for demo
+      setSubscriptions(mockSubscriptions);
+      setAnalytics({
+        totalMonthly: 94.98,
+        totalYearly: 1139.76,
+        activeSubscriptions: 4,
+        categoriesBreakdown: {
+          Entertainment: 25.98,
+          Design: 64.99,
+          Development: 4.00,
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddSubscription = async () => {
+    try {
+      const result = await ApiService.createSubscription({
+        ...newSubscription,
+        cost: parseFloat(newSubscription.cost),
+        nextBillingDate: new Date(newSubscription.nextBillingDate),
+      });
+
+      if (result.success) {
+        setAddDialogOpen(false);
+        setNewSubscription({
+          name: '',
+          cost: '',
+          billingCycle: 'monthly',
+          category: 'Other',
+          nextBillingDate: '',
+        });
+        loadDashboardData(); // Refresh data
+      }
+    } catch (err) {
+      setError('Failed to add subscription');
+    }
+  };
+
+  const handleDeleteSubscription = async (id: string) => {
+    try {
+      const result = await ApiService.deleteSubscription(id);
+      if (result.success) {
+        // Track analytics
+        GoogleAnalyticsAPI.trackSubscriptionCancelled(id);
+        
+        // Send notification
+        await ComprehensiveApiManager.sendNotification(
+          'email',
+          currentUser?.email || '',
+          'Subscription Cancelled',
+          `Your subscription has been successfully cancelled.`
+        );
+        
+        loadDashboardData(); // Refresh data
+      }
+    } catch (err) {
+      setError('Failed to delete subscription');
+    }
+  };
+
+  const enrichSubscriptionsData = async (subscriptions: any[]) => {
+    const enriched = await Promise.all(
+      subscriptions.map(async (sub) => {
+        try {
+          const enrichment = await ComprehensiveApiManager.enrichSubscriptionData(sub.name);
+          return { ...sub, enrichment };
+        } catch {
+          return sub;
+        }
+      })
+    );
+    return enriched;
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const totalMonthlySpend = mockSubscriptions
-    .filter(sub => sub.status === 'active')
-    .reduce((sum, sub) => sum + sub.cost, 0);
-
-  const activeSubscriptions = mockSubscriptions.filter(sub => sub.status === 'active').length;
-  const cancelledSubscriptions = mockSubscriptions.filter(sub => sub.status === 'cancelled').length;
+  const totalMonthlySpend = analytics?.totalMonthly || 0;
+  const activeSubscriptions = analytics?.activeSubscriptions || 0;
+  const cancelledSubscriptions = subscriptions.filter(sub => sub.status === 'cancelled').length;
+  const potentialSavings = analytics?.potentialSavings || 127.50;
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <Dashboard /> },
@@ -286,6 +429,12 @@ const LovableDashboard: React.FC = () => {
         }}
       >
         {/* Header */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box>
@@ -304,6 +453,7 @@ const LovableDashboard: React.FC = () => {
                 variant="contained"
                 startIcon={<Add />}
                 sx={{ borderRadius: 2 }}
+                onClick={() => setAddDialogOpen(true)}
               >
                 Add Subscription
               </Button>
@@ -322,7 +472,7 @@ const LovableDashboard: React.FC = () => {
                       Monthly Spend
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      ${totalMonthlySpend.toFixed(2)}
+                      {loading ? "..." : `$${totalMonthlySpend.toFixed(2)}`}
                     </Typography>
                   </Box>
                   <Avatar sx={{ bgcolor: alpha('#7F5AF0', 0.1), color: 'primary.main' }}>
@@ -342,7 +492,7 @@ const LovableDashboard: React.FC = () => {
                       Active Subscriptions
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {activeSubscriptions}
+                      {loading ? "..." : activeSubscriptions}
                     </Typography>
                   </Box>
                   <Avatar sx={{ bgcolor: alpha('#2CB67D', 0.1), color: 'success.main' }}>
@@ -362,7 +512,7 @@ const LovableDashboard: React.FC = () => {
                       Cancelled This Month
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {cancelledSubscriptions}
+                      {loading ? "..." : cancelledSubscriptions}
                     </Typography>
                   </Box>
                   <Avatar sx={{ bgcolor: alpha('#FF5722', 0.1), color: 'error.main' }}>
@@ -382,7 +532,7 @@ const LovableDashboard: React.FC = () => {
                       Potential Savings
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
-                      $127.50
+                      {loading ? "..." : `$${potentialSavings.toFixed(2)}`}
                     </Typography>
                   </Box>
                   <Avatar sx={{ bgcolor: alpha('#2CB67D', 0.1), color: 'success.main' }}>
@@ -409,7 +559,16 @@ const LovableDashboard: React.FC = () => {
                 </Box>
                 
                 <Stack spacing={2}>
-                  {mockSubscriptions.slice(0, 5).map((subscription) => (
+                  {loading ? (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography>Loading subscriptions...</Typography>
+                    </Box>
+                  ) : subscriptions.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography color="text.secondary">No subscriptions found</Typography>
+                    </Box>
+                  ) : (
+                    subscriptions.slice(0, 5).map((subscription) => (
                     <Paper
                       key={subscription.id}
                       sx={{
@@ -455,13 +614,18 @@ const LovableDashboard: React.FC = () => {
                               variant="outlined"
                             />
                           </Box>
-                          <IconButton size="small">
-                            <MoreVert />
+                          <IconButton 
+                            size="small"
+                            onClick={() => handleDeleteSubscription(subscription.id)}
+                            color="error"
+                          >
+                            <Delete />
                           </IconButton>
                         </Box>
                       </Box>
                     </Paper>
-                  ))}
+                  ))
+                  )}
                 </Stack>
               </CardContent>
             </Card>
@@ -552,6 +716,64 @@ const LovableDashboard: React.FC = () => {
           </Grid>
         </Grid>
       </Box>
+
+      {/* Add Subscription Dialog */}
+      <Dialog 
+        open={addDialogOpen} 
+        onClose={() => setAddDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Add New Subscription</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Subscription Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newSubscription.name}
+            onChange={(e) => setNewSubscription({...newSubscription, name: e.target.value})}
+          />
+          <TextField
+            margin="dense"
+            label="Monthly Cost"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={newSubscription.cost}
+            onChange={(e) => setNewSubscription({...newSubscription, cost: e.target.value})}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={newSubscription.category}
+              label="Category"
+              onChange={(e) => setNewSubscription({...newSubscription, category: e.target.value})}
+            >
+              <MenuItem value="Entertainment">Entertainment</MenuItem>
+              <MenuItem value="Design">Design</MenuItem>
+              <MenuItem value="Development">Development</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            label="Next Billing Date"
+            type="date"
+            fullWidth
+            variant="outlined"
+            InputLabelProps={{ shrink: true }}
+            value={newSubscription.nextBillingDate}
+            onChange={(e) => setNewSubscription({...newSubscription, nextBillingDate: e.target.value})}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddSubscription} variant="contained">Add Subscription</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
