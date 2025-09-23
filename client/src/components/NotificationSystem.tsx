@@ -32,7 +32,7 @@ import {
   Analytics,
   CurrencyExchange
 } from '@mui/icons-material';
-import { GoogleAnalyticsAPI, SendGridAPI, TwilioAPI } from '../services/ComprehensiveApiService';
+import { GoogleAnalyticsAPI, SendGridAPI, TwilioAPI } from '../services/ComprehensiveApiService.ts';
 
 interface Notification {
   id: string;

@@ -60,7 +60,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import ApiService from '../services/api.ts';
-import ComprehensiveApiManager, { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService';
+import ComprehensiveApiManager, { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService.ts';
 
 const drawerWidth = 280;
 

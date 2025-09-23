@@ -46,7 +46,7 @@ import ComprehensiveApiManager, {
   SendGridAPI,
   TwilioAPI,
   ClearbitAPI
-} from '../services/ComprehensiveApiService';
+} from '../services/ComprehensiveApiService.ts';
 
 interface ApiTest {
   id: string;

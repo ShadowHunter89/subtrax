@@ -15,7 +15,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import ComprehensiveApiManager, { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService';
+import ComprehensiveApiManager, { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService.ts';
 
 interface PaymentDialogProps {
   open: boolean;

@@ -39,7 +39,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService';
+import { GoogleAnalyticsAPI } from '../services/ComprehensiveApiService.ts';
 import { NotificationHelpers } from './NotificationSystem';
 
 interface SubscriptionMetrics {

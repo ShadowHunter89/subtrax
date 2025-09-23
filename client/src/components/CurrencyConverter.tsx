@@ -30,7 +30,7 @@ import {
   GoogleAnalyticsAPI,
   ExchangeRateAPI,
   FixerAPI 
-} from '../services/ComprehensiveApiService';
+} from '../services/ComprehensiveApiService.ts';
 import { NotificationHelpers } from './NotificationSystem';
 
 interface ExchangeRate {
