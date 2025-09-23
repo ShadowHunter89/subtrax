@@ -3,13 +3,15 @@ const { admin } = require('../firebaseAdmin');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
-const db = admin.firestore();
+const { getDb } = require('../firebaseAdmin');
 
 // GET /api/users/profile - Get user profile
 router.get('/profile', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const userRef = db.collection('users').doc(userId);
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
     
     if (!userDoc.exists) {

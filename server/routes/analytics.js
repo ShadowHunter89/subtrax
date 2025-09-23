@@ -1,19 +1,20 @@
 const express = require('express');
-const { admin } = require('../firebaseAdmin');
+const { admin, getDb } = require('../firebaseAdmin');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
-const db = admin.firestore();
 
 // GET /api/analytics/dashboard - Get user dashboard analytics
 router.get('/dashboard', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const { timeframe = '30d' } = req.query;
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const { timeframe = '30d' } = req.query;
     
-    // Get user's subscriptions
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
-    const subscriptionsSnapshot = await subscriptionsRef.get();
+  // Get user's subscriptions
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const subscriptionsSnapshot = await subscriptionsRef.get();
     
     let totalMonthly = 0;
     let totalYearly = 0;
@@ -81,12 +82,14 @@ router.get('/dashboard', userAuth, async (req, res) => {
 // GET /api/analytics/spending - Get detailed spending analytics
 router.get('/spending', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const { period = 'monthly', months = 12 } = req.query;
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const { period = 'monthly', months = 12 } = req.query;
     
-    // Get subscription history
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
-    const snapshot = await subscriptionsRef.get();
+  // Get subscription history
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const snapshot = await subscriptionsRef.get();
     
     const spendingData = [];
     const now = new Date();
@@ -134,9 +137,11 @@ router.get('/spending', userAuth, async (req, res) => {
 // GET /api/analytics/categories - Get category breakdown
 router.get('/categories', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
-    const snapshot = await subscriptionsRef.where('status', '==', 'active').get();
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const snapshot = await subscriptionsRef.where('status', '==', 'active').get();
     
     const categories = {};
     let totalSpending = 0;
@@ -187,8 +192,10 @@ router.get('/categories', userAuth, async (req, res) => {
 // POST /api/analytics/track-event - Track user events
 router.post('/track-event', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const { event, category, label, value, metadata = {} } = req.body;
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const { event, category, label, value, metadata = {} } = req.body;
     
     if (!event) {
       return res.status(400).json({ success: false, error: 'Event name is required' });
@@ -206,7 +213,7 @@ router.post('/track-event', userAuth, async (req, res) => {
       sessionId: req.headers['x-session-id'] || 'unknown'
     };
     
-    await db.collection('analytics_events').add(eventData);
+  await db.collection('analytics_events').add(eventData);
     
     res.json({ success: true, message: 'Event tracked successfully' });
   } catch (error) {

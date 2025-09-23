@@ -4,13 +4,15 @@ const adminAuth = require('../middleware/adminAuth');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
-const db = admin.firestore();
+const { getDb } = require('../firebaseAdmin');
 
 // GET /api/subscriptions - Get user's subscriptions
 router.get('/', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
     const snapshot = await subscriptionsRef.orderBy('createdAt', 'desc').get();
     
     const subscriptions = [];
@@ -46,8 +48,10 @@ router.post('/', userAuth, async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     };
     
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
-    const docRef = await subscriptionsRef.add(subscriptionData);
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const docRef = await subscriptionsRef.add(subscriptionData);
     
     res.json({ success: true, id: docRef.id, subscription: subscriptionData });
   } catch (error) {
@@ -66,7 +70,9 @@ router.put('/:id', userAuth, async (req, res) => {
     // Add updated timestamp
     updates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
     
-    const subscriptionRef = db.collection('users').doc(userId).collection('subscriptions').doc(subscriptionId);
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const subscriptionRef = db.collection('users').doc(userId).collection('subscriptions').doc(subscriptionId);
     await subscriptionRef.update(updates);
     
     res.json({ success: true, message: 'Subscription updated successfully' });
@@ -82,8 +88,10 @@ router.delete('/:id', userAuth, async (req, res) => {
     const userId = req.user.uid;
     const subscriptionId = req.params.id;
     
-    const subscriptionRef = db.collection('users').doc(userId).collection('subscriptions').doc(subscriptionId);
-    await subscriptionRef.delete();
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const subscriptionRef = db.collection('users').doc(userId).collection('subscriptions').doc(subscriptionId);
+  await subscriptionRef.delete();
     
     res.json({ success: true, message: 'Subscription deleted successfully' });
   } catch (error) {
@@ -96,8 +104,10 @@ router.delete('/:id', userAuth, async (req, res) => {
 router.get('/analytics', userAuth, async (req, res) => {
   try {
     const userId = req.user.uid;
-    const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
-    const snapshot = await subscriptionsRef.get();
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const subscriptionsRef = db.collection('users').doc(userId).collection('subscriptions');
+  const snapshot = await subscriptionsRef.get();
     
     let totalMonthly = 0;
     let totalYearly = 0;

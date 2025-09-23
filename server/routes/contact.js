@@ -1,9 +1,8 @@
 const express = require('express');
-const { admin } = require('../firebaseAdmin');
+const { getDb } = require('../firebaseAdmin');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
-const db = admin.firestore();
 
 // POST /api/contact - Contact form submission
 router.post('/', async (req, res) => {
@@ -20,6 +19,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid email format' });
     }
     
+    const db = getDb();
+    if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
     // Store contact submission
     const contactData = {
       name,
@@ -72,8 +73,10 @@ router.post('/newsletter', async (req, res) => {
     }
     
     // Check if already subscribed
-    const existingRef = db.collection('newsletter_subscribers').where('email', '==', email);
-    const existingSnapshot = await existingRef.get();
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const existingRef = db.collection('newsletter_subscribers').where('email', '==', email);
+  const existingSnapshot = await existingRef.get();
     
     if (!existingSnapshot.empty) {
       return res.json({ success: true, message: 'You are already subscribed to our newsletter!' });
@@ -88,7 +91,7 @@ router.post('/newsletter', async (req, res) => {
       source: 'website'
     };
     
-    await db.collection('newsletter_subscribers').add(subscriberData);
+  await db.collection('newsletter_subscribers').add(subscriberData);
     
     res.json({ 
       success: true, 
@@ -125,7 +128,9 @@ router.post('/feedback', userAuth, async (req, res) => {
       status: 'pending'
     };
     
-    const feedbackRef = await db.collection('user_feedback').add(feedbackData);
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const feedbackRef = await db.collection('user_feedback').add(feedbackData);
     
     // Update user's total feedback count
     const userRef = db.collection('users').doc(userId);
@@ -148,8 +153,10 @@ router.post('/feedback', userAuth, async (req, res) => {
 // GET /api/contact/faq - Get frequently asked questions
 router.get('/faq', async (req, res) => {
   try {
-    const faqRef = db.collection('faq').where('published', '==', true).orderBy('order');
-    const snapshot = await faqRef.get();
+  const db = getDb();
+  if (!db) return res.json({ success: true, faqs: [] });
+  const faqRef = db.collection('faq').where('published', '==', true).orderBy('order');
+  const snapshot = await faqRef.get();
     
     const faqs = [];
     snapshot.forEach(doc => {

@@ -12,18 +12,3 @@ services:
         value: production
       - fromGroup: subtrax-secrets
     autoDeploy: true
-
-  # Frontend (Static Site)
-  - type: static
-    name: subtrax-frontend
-    plan: starter
-    buildCommand: 'cd client && CI=false npm install && npm run build'
-    staticPublishPath: ./client/build
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://subtrax-server.onrender.com
-    autoDeploy: true

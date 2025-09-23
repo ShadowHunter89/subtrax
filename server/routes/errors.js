@@ -1,8 +1,8 @@
 const express = require('express');
-const { admin } = require('../firebaseAdmin');
+const { getDb } = require('../firebaseAdmin');
 
 const router = express.Router();
-const db = admin.firestore();
+// lazy DB access
 
 // POST /api/errors/log - Log client-side errors
 router.post('/log', async (req, res) => {
@@ -38,8 +38,10 @@ router.post('/log', async (req, res) => {
       environment: process.env.NODE_ENV || 'development'
     };
 
-    // Store in Firestore
-    await db.collection('error_logs').add(errorData);
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  // Store in Firestore
+  await db.collection('error_logs').add(errorData);
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
@@ -64,7 +66,9 @@ router.get('/', async (req, res) => {
     // In a real app, you'd want admin authentication here
     const { limit = 50, severity, resolved, userId } = req.query;
 
-    let query = db.collection('error_logs').orderBy('createdAt', 'desc');
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  let query = db.collection('error_logs').orderBy('createdAt', 'desc');
 
     // Apply filters
     if (severity) {
@@ -97,7 +101,9 @@ router.put('/:id/resolve', async (req, res) => {
     const errorId = req.params.id;
     const { resolvedBy, resolution } = req.body;
 
-    await db.collection('error_logs').doc(errorId).update({
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  await db.collection('error_logs').doc(errorId).update({
       resolved: true,
       resolvedAt: admin.firestore.FieldValue.serverTimestamp(),
       resolvedBy: resolvedBy || 'system',
@@ -135,6 +141,8 @@ router.get('/stats', async (req, res) => {
     }
 
     // Get error logs in timeframe
+    const db = getDb();
+    if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
     const snapshot = await db.collection('error_logs')
       .where('timestamp', '>=', startDate)
       .where('timestamp', '<=', now)

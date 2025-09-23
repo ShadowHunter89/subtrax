@@ -3,13 +3,15 @@ const { admin } = require('../firebaseAdmin');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
-const db = admin.firestore();
+const { getDb } = require('../firebaseAdmin');
 
 // POST /api/ai/suggestions - Get AI-powered subscription suggestions
 router.post('/suggestions', userAuth, async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const { subscriptions = [], preferences = {} } = req.body;
+  const db = getDb();
+  if (!db) return res.status(503).json({ success: false, error: 'Firebase not initialized' });
+  const userId = req.user.uid;
+  const { subscriptions = [], preferences = {} } = req.body;
     
     // Basic AI suggestions logic (can be enhanced with actual AI services)
     const suggestions = [];

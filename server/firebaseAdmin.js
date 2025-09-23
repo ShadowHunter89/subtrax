@@ -66,4 +66,13 @@ async function initFromSecretManager(secretName, projectId) {
   }
 })();
 
-module.exports = { admin, initialized };
+function getDb() {
+  try {
+    if (initialized && admin && admin.firestore) return admin.firestore();
+  } catch (e) {
+    // ignore
+  }
+  return null;
+}
+
+module.exports = { admin, initialized, getDb };
